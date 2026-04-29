@@ -1,0 +1,23 @@
+{
+  "name": "resume-builder",
+  "version": "1.0.0",
+  "description": "A web application to run locally for storing resume related information and automate the process of formatting new resumes, saving them, and printing them.",
+  "homepage": "https://github.com/doeverett42/Resume-Builder#readme",
+  "bugs": {
+    "url": "https://github.com/doeverett42/Resume-Builder/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doeverett42/Resume-Builder.git"
+  },
+  "license": "ISC",
+  "author": "David Everett",
+  "type": "commonjs",
+  "main": "server.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
