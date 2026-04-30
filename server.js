@@ -351,7 +351,7 @@ app.post('/api/resumes/full', async (req, res) => {
                 outcome: "success", 
                 message: `Resume '${strResumeTitle}' and all related links created.`, 
                 intNewID: intResumeID 
-            });
+            })
 
         } else {
             await dbResumes.run("ROLLBACK");
@@ -362,6 +362,50 @@ app.post('/api/resumes/full', async (req, res) => {
         //rollback ensures that if one loop fails then no partial data is saved
         await dbResumes.run("ROLLBACK");
         res.status(500).json({outcome:"error", message:objError.message})
+    }
+})
+
+//DELETE a full resume and all its associated junction table links
+//use transactions to ensure data integrity
+app.delete('/api/resumes/full/:id', async (req, res) => {
+    const intResumeID = req.params.id
+
+    try {
+        await dbResumes.run("BEGIN TRANSACTION")
+
+        //delete all links associated with this resume in the junction tables
+        await dbResumes.run("DELETE FROM tblResumeJobs WHERE ResumeID = ?", [intResumeID])
+        await dbResumes.run("DELETE FROM tblResumeSkills WHERE ResumeID = ?", [intResumeID])
+        await dbResumes.run("DELETE FROM tblResumeEducation WHERE ResumeID = ?", [intResumeID])
+        await dbResumes.run("DELETE FROM tblResumeCertificates WHERE ResumeID = ?", [intResumeID])
+
+        //delete the main resume record
+        const strQuery = "DELETE FROM tblResumes WHERE ResumeID = ?"
+        const objResult = await dbResumes.run(strQuery,[intResumeID])
+
+        //check if the resume actually existed
+        if (objResult.changes > 0) {
+            await dbResumes.run("COMMIT")
+            res.status(200).json({ 
+                outcome: "success", 
+                message: `Resume ${intResumeID} and all its associated links have been deleted.` 
+            })
+        } else {
+            //if no rows changed, the ResumeID didn't exist
+            await dbResumes.run("ROLLBACK")
+            res.status(404).json({ 
+                outcome: "error", 
+                message: "Resume not found. No data was deleted." 
+            })
+        }
+
+    } catch (objError) {
+        //rollback any partial deletions if a database error occurs
+        await dbResumes.run("ROLLBACK")
+        res.status(500).json({ 
+            outcome: "error", 
+            message: objError.message 
+        })
     }
 })
 
