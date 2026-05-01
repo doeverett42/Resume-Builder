@@ -87,6 +87,156 @@ app.delete('/api/settings', async (req,res) => {
     }
 })
 
+//GETs for all resume information
+app.get('/api/master/jobs', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblJobs"
+        const arrRows = await dbResumes.all(strQuery)
+        res.status(200).json({ outcome: "success", data: arrRows })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+app.get('/api/master/skills', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblSkills"
+        const arrRows = await dbResumes.all(strQuery)
+        res.status(200).json({ outcome: "success", data: arrRows })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+app.get('/api/master/certificates', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblCertificates"
+        const arrRows = await dbResumes.all(strQuery)
+        res.status(200).json({ outcome: "success", data: arrRows })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+app.get('/api/master/education', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblEducation"
+        const arrRows = await dbResumes.all(strQuery)
+        res.status(200).json({ outcome: "success", data: arrRows })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+app.get('/api/master/jobs/:id', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblJobs WHERE JobID = ?"
+        const objRow = await dbResumes.get(strQuery, [req.params.id])
+        if (objRow) 
+            res.status(200).json({ outcome: "success", data: objRow })
+        else 
+            res.status(404).json({ outcome: "error", message: "Job not found." })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+app.get('/api/master/skills/:id', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblSkills WHERE SkillID = ?"
+        const objRow = await dbResumes.get(strQuery, [req.params.id])
+        if (objRow) 
+            res.status(200).json({ outcome: "success", data: objRow })
+        else 
+            res.status(404).json({ outcome: "error", message: "Skill not found." })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+app.get('/api/master/certificates/:id', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblCertificates WHERE CertID = ?"
+        const objRow = await dbResumes.get(strQuery, [req.params.id])
+        if (objRow) 
+            res.status(200).json({ outcome: "success", data: objRow })
+        else 
+            res.status(404).json({ outcome: "error", message: "Certificate not found." })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+app.get('/api/master/education/:id', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblEducation WHERE EducationID = ?"
+        const objRow = await dbResumes.get(strQuery, [req.params.id])
+        if (objRow) 
+            res.status(200).json({ outcome: "success", data: objRow })
+        else 
+            res.status(404).json({ outcome: "error", message: "Education entry not found." })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+app.get('/api/resumes', async (req, res) => {
+    try {
+        const strQuery = "SELECT * FROM tblResumes"
+        const arrRows = await dbResumes.all(strQuery)
+        res.status(200).json({ outcome: "success", data: arrRows })
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
+/***********
+ * GET to fetch a specific resume and all its associated values in linked tables 
+ */
+app.get('/api/resumes/full/:id', async (req, res) => {
+    const intResumeID = req.params.id
+
+    try {
+        //get the main resume title/ID
+        const strResumeQuery = "SELECT * FROM tblResumes WHERE ResumeID = ?"
+        const objResume = await dbResumes.get(strResumeQuery, [intResumeID])
+
+        if (!objResume) 
+            return res.status(404).json({ outcome: "error", message: "Resume not found." })
+
+        //fetch Jobs  
+        const strJobsQuery = `SELECT tblJobs.* FOM tblJobs LEFT JOIN tblResumeJobs ON tblJobs.JobID = tblResumeJobs.JobID WHERE tblResumeJobs.ResumeID = ?`
+        const arrJobs = await dbResumes.all(strJobsQuery, [intResumeID])
+
+        //fetch Skills
+        const strSkillsQuery = `SELECT tblSkills.* FROM tblSkills LEFT JOIN tblResumeSkills ON tblSkills.SkillID = tblResumeSkills.SkillID WHERE tblResumeSkills.ResumeID = ?`
+        const arrSkills = await dbResumes.all(strSkillsQuery, [intResumeID])
+
+        //fetch Education
+        const strEduQuery = `SELECT tblEducation.* FROM tblEducation LEFT JOIN tblResumeEducation ON tblEducation.EducationID = tblResumeEducation.EducationID WHERE tblResumeEducation.ResumeID = ?`
+        const arrEducation = await dbResumes.all(strEduQuery, [intResumeID])
+
+        //fetch Certificates
+        const strCertQuery = `SELECT tblCertificates.* FROM tblCertificates LEFT JOIN tblResumeCertificates ON tblCertificates.CertID = tblResumeCertificates.CertID WHERE tblResumeCertificates.ResumeID = ?`
+        const arrCertificates = await dbResumes.all(strCertQuery, [intResumeID])
+
+        //group everything together
+        const objFullResume = {
+            intResumeID: objResume.ResumeID,
+            strResumeTitle: objResume.ResumeTitle,
+            arrJobs: arrJobs,
+            arrSkills: arrSkills,
+            arrEducation: arrEducation,
+            arrCertificates: arrCertificates
+        }
+
+        res.status(200).json({ outcome: "success", data: objFullResume })
+
+    } catch (objError) {
+        res.status(500).json({ outcome: "error", message: objError.message })
+    }
+})
+
 
 //POSTs for all resume information
 app.post('/api/master/jobs', async (req, res) => {
@@ -354,13 +504,13 @@ app.post('/api/resumes/full', async (req, res) => {
             })
 
         } else {
-            await dbResumes.run("ROLLBACK");
+            await dbResumes.run("ROLLBACK")
             res.status(400).json({outcome:"error", message:"Initial resume record could not be created."})
         }
 
     } catch (objError) {
         //rollback ensures that if one loop fails then no partial data is saved
-        await dbResumes.run("ROLLBACK");
+        await dbResumes.run("ROLLBACK")
         res.status(500).json({outcome:"error", message:objError.message})
     }
 })
