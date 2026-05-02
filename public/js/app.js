@@ -43,3 +43,23 @@ document.querySelector('#btnHomeStart').addEventListener('click', () => {
     //takes user directly to the Data Repository to begin entry
     document.querySelector('#divMaster').classList.remove('hidden')
 })
+
+//credit popup for external libraries
+document.getElementById('btnCredits').addEventListener('click', () => {
+    Swal.fire({
+        title: 'Project Acknowledgments',
+        icon: 'info',
+        html: `
+            <div class="text-start">
+                <p>This page was built with the following:</p>
+                <p style="font-size:small;">Bootstrap 5</p>
+                <p style="font-size:small;">Bootstrap Icons</p>
+                <p style="font-size:small;">SweetAlert2</p>
+                <p style="font-size:small;">Express.js</p>
+                <p style="font-size:small;">SQLite & SQLite3</p>
+                <p style="font-size:small;">Dotenv</p>
+                <p style="font-size:small;">Google Generative AI</p>
+            </div>
+        `
+    })
+})
