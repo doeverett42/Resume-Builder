@@ -1,3 +1,7 @@
+/**
+ *      NAVIGATION FUNCTIONALITY
+ */
+
 //helper function to hide all UI sections before showing the selection
 function hideAllSections() {
     document.querySelector('#divHome').classList.add('hidden')
@@ -64,3 +68,63 @@ document.getElementById('btnCredits').addEventListener('click', () => {
     })
 })
 
+/**
+ *      INPUT FUNCTIONALITY 
+ */
+
+//helper function to display popup for empty inputs & return false if fields missing and true otherwise 
+function validateInput(fields) {
+    let missing = [] 
+    fields.forEach(field => {
+        if(!field.value || field.value.trim() === '') 
+            missing.push(field.name)
+    })
+
+    if(missing.length > 0) {
+        Swal.fire({
+            title: 'Missing Information',
+            text: `Please fill out the following fields: ${missing.join(', ')}`,
+            icon: 'warning'
+        })
+        return false 
+    }
+    return true 
+}
+
+//settings API key configuration 
+document.querySelector('#btnSaveKey').addEventListener('click', async () => {
+    const apiKey = document.getElementById('txtApiKey').value 
+    if(!validateInput([{name: 'GeminiAPIKey', value: apiKey}]))
+        return 
+
+    try {
+        //check to see if a key already exists in the database and delete if so 
+        const responseCheckKey = await fetch('api/settings/GeminiAPIKey', {method: 'GET'})
+        const dataCheckKey = await responseCheckKey.json() 
+
+        if(dataCheckKey && dataCheckKey.SettingValue) {
+            const responseDelete = await fetch('api/settings/GeminiAPIKey', {method: 'DELETE'})
+            const dataDelete = await responseDelete.json() 
+
+            if(dataDelete.outcome != 'success')
+                throw new Error('Failed to clear old API key: ', dataDelete.message) 
+        }
+
+        //save new api key
+        const response = await fetch('api/settings', {
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({strKey:'GeminiAPIKey', strValue: apiKey})
+        })
+
+        const data = await response.json() 
+        
+        if(data.outcome == 'success') {
+            Swal.fire({title:'Success',text:'API Key saved. AI is ready to use!',icon:'success'})
+            document.getElementById('txtApiKey').value = ''
+        } else 
+            Swal.fire({title:'Error',text:data.message,icon:'error'})
+    } catch (objError) {
+        console.error('Settings error: ', objError)
+    }
+})

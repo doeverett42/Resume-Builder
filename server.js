@@ -57,7 +57,7 @@ app.get('/api/settings/:key', async (req,res) => {
     try {
         const strQuery = "SELECT SettingValue FROM tblSettings WHERE SettingKey = ?"
         const objRow = await dbResumes.get(strQuery, [req.params.key])
-        if(objRow < 1)
+        if(!objRow)
             res.status(404).json({outcome:"error",message:"API key not found."})
         else 
             res.status(200).json(objRow)
@@ -85,27 +85,12 @@ app.post('/api/settings', async (req,res) => {
     }
 })
 
-app.put('/api/settings', async (req,res) => {
-    const {strKey, strValue} = req.body 
-    try {
-        const strQuery = "UPDATE tblSettings SET SettingValue = ? WHERE SettingKey = ?"
-        const objResult = await dbResumes.run(strQuery,[strValue,strKey])
-        if(objResult.changes > 0)
-            res.status(201).json({outcome:"success", message:`Setting with id ${strKey} was successfully updated`})
-        else
-            res.status(400).json({outcome:"error",message:"Setting was not updated."})
-    } catch (objError) {
-        res.status(500).json({outcome:"error",message:objError.message})
-
-    }
-})
-
 app.delete('/api/settings/:key', async (req,res) => {
     try {
         const strQuery = "DELETE FROM tblSettings WHERE SettingKey = ?"
         const objResult = await dbResumes.run(strQuery,[req.params.key])
         if(objResult.changes > 0) 
-            res.status(201).json({outcome:"success", message:`Setting with id ${strKey} was deleted from tblSettings`})
+            res.status(200).json({outcome:"success", message:`Setting with id ${req.params.key} was deleted from tblSettings`})
         else 
             res.status(400).json({outcome:"error",message:"Setting was not deleted."})
     } catch (objError) {

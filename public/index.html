@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume Speedrunner</title>
-    <!-- Local Bootstrap and icons -->
+    <link href="css/quill.snow.css" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/bootstrap-icons.css" rel="stylesheet">
     <!-- Style section was generated using AI to help with media query for web/print view of resume as well as selecting interface -->
@@ -260,7 +260,7 @@
         </div>
 
         <!-- View Resume Section -->
-        <div id="secView" class="hidden" role="region" aria-labelledby="viewHeading">
+        <div id="divView" class="hidden" role="region" aria-labelledby="viewHeading">
             <h3 id="viewHeading" class="visually-hidden">Resume Preview</h3>
             <div class="card shadow-sm mb-4 no-print">
                 <div class="card-body d-flex flex-wrap gap-2 justify-content-center" id="divResumeList" role="group" aria-label="Saved Resumes"></div>
@@ -277,6 +277,7 @@
 
     </main>
     <script src="js/sweetalert2@11.js"></script>
+    <script src="js/quill.bundle.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
 </body>
