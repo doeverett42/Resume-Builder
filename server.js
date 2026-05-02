@@ -1,4 +1,4 @@
-const {GoogleGenAI} = require("@google/generative-ai")
+const { GoogleGenerativeAI } = require("@google/generative-ai")
 const express = require("express")
 const sqlite3 = require("sqlite3")
 //sqlite wrapper used as advised by Google Gemini AI in order to adapt the native callback-based sqlite3 into a promise-based interface
@@ -10,7 +10,7 @@ const dotenv = require('dotenv').config()
 const app = express() 
 const HTTP_PORT = process.env.HTTP_PORT
 // Initialize the Google GenAI client with the API key from our .env file
-const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY)
+let genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 // identify the model we want to use for story generation
 const model = "gemini-3-flash-preview"
 
@@ -36,6 +36,22 @@ const initDb = async () => {
     }
 }
 
+//Route to optimize job details with Gemini AI
+app.post('/api/optimize', async (req,res) => {
+    try {
+        const {role,details} = req.body 
+        const prompt = `Imagine you're an experienced recruiter. Rewrite the following job details for a ${role} to sound highly professional, action-oriented, and tailored for a resume. Keept it concise: ${details}`
+        const model = genAI.getGenerativeModel({model: model})  
+        const result = await model.generateContent(prompt)
+        const response = await result.response 
+        const text = response.text()  
+
+        res.status(200).json({outcome:"success", optimizedText: text})
+    } catch (objError) {
+        res.status(500).json({outcome:"error",message:objError.message})
+    }
+})
+
 //tblSettings routes
 app.get('/api/settings/:key', async (req,res) => {
     try {
@@ -50,13 +66,17 @@ app.get('/api/settings/:key', async (req,res) => {
     }
 })
 
+//not only add settings to databse but if setting is api key then update ai model
 app.post('/api/settings', async (req,res) => {
     const {strKey,strValue} = req.body 
     try {
         const strQuery = "INSERT INTO tblSettings (SettingKey,SettingValue) VALUES (?,?)"
         const objResult = await dbResumes.run(strQuery,[strKey,strValue])
-        if(objResult.changes > 0)
+        if(objResult.changes > 0) {
+            if(strKey == "GeminiAPIKey")
+                genAI = new GoogleGenerativeAI(strValue)
             res.status(201).json({outcome:"success", message:`Setting with id ${strKey} and value ${strValue} was successfully added to tblSettings`})
+        }
         else 
             res.status(400).json({outcome:"error",message:"Setting was not created."})
     } catch (objError) {
@@ -80,11 +100,10 @@ app.put('/api/settings', async (req,res) => {
     }
 })
 
-app.delete('/api/settings', async (req,res) => {
-    const strKey = req.body 
+app.delete('/api/settings/:key', async (req,res) => {
     try {
         const strQuery = "DELETE FROM tblSettings WHERE SettingKey = ?"
-        const objResult = await dbResumes.run(strQuery,[strKey])
+        const objResult = await dbResumes.run(strQuery,[req.params.key])
         if(objResult.changes > 0) 
             res.status(201).json({outcome:"success", message:`Setting with id ${strKey} was deleted from tblSettings`})
         else 

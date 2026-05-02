@@ -4,7 +4,7 @@ function hideAllSections() {
     document.querySelector('#divSettings').classList.add('hidden')
     document.querySelector('#divMaster').classList.add('hidden')
     document.querySelector('#divBuild').classList.add('hidden')
-    document.querySelector('#secView').classList.add('hidden')
+    document.querySelector('#divView').classList.add('hidden')
 }
 
 //handler for the Home navigation button
@@ -34,7 +34,7 @@ document.querySelector('#btnNavBuild').addEventListener('click', () => {
 //handler for the View navigation button
 document.querySelector('#btnNavView').addEventListener('click', () => {
     hideAllSections()
-    document.querySelector('#secView').classList.remove('hidden')
+    document.querySelector('#divView').classList.remove('hidden')
 })
 
 //handler for the "Get Started" button on the Home screen
@@ -63,3 +63,4 @@ document.getElementById('btnCredits').addEventListener('click', () => {
         `
     })
 })
+
