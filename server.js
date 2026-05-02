@@ -1,11 +1,18 @@
+const {GoogleGenAI} = require("@google/generative-ai")
 const express = require("express")
 const sqlite3 = require("sqlite3")
 //sqlite wrapper used as advised by Google Gemini AI in order to adapt the native callback-based sqlite3 into a promise-based interface
 // for cleaner code using modern async/await syntax and not having to nest functions to fetch data such that ES6 standards are met
 const { open } = require("sqlite")
+//loads .env into process.env 
+const dotenv = require('dotenv').config()
 
 const app = express() 
-const HTTP_PORT = 3000
+const HTTP_PORT = process.env.HTTP_PORT
+// Initialize the Google GenAI client with the API key from our .env file
+const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY)
+// identify the model we want to use for story generation
+const model = "gemini-3-flash-preview"
 
 app.use(express.json()) 
 app.use(express.static('public')) //directs user to public/index.html when visiting http://localhost:3000/ and this server.js is running
@@ -46,8 +53,8 @@ app.get('/api/settings/:key', async (req,res) => {
 app.post('/api/settings', async (req,res) => {
     const {strKey,strValue} = req.body 
     try {
-        strQuery = "INSERT INTO tblSettings (SettingKey,SettingValue) VALUES (?,?)"
-        await dbResumes.run(strQuery,[strKey,strValue])
+        const strQuery = "INSERT INTO tblSettings (SettingKey,SettingValue) VALUES (?,?)"
+        const objResult = await dbResumes.run(strQuery,[strKey,strValue])
         if(objResult.changes > 0)
             res.status(201).json({outcome:"success", message:`Setting with id ${strKey} and value ${strValue} was successfully added to tblSettings`})
         else 
@@ -61,8 +68,8 @@ app.post('/api/settings', async (req,res) => {
 app.put('/api/settings', async (req,res) => {
     const {strKey, strValue} = req.body 
     try {
-        strQuery = "UPDATE tblSettings SET SettingValue = ? WHERE SettingKey = ?"
-        await dbResumes.run(strQuery,[strValue,strKey])
+        const strQuery = "UPDATE tblSettings SET SettingValue = ? WHERE SettingKey = ?"
+        const objResult = await dbResumes.run(strQuery,[strValue,strKey])
         if(objResult.changes > 0)
             res.status(201).json({outcome:"success", message:`Setting with id ${strKey} was successfully updated`})
         else
@@ -76,8 +83,8 @@ app.put('/api/settings', async (req,res) => {
 app.delete('/api/settings', async (req,res) => {
     const strKey = req.body 
     try {
-        strQuery = "DELETE FROM tblSettings WHERE SettingKey = ?"
-        await dbResumes.run(strQuery,[strKey])
+        const strQuery = "DELETE FROM tblSettings WHERE SettingKey = ?"
+        const objResult = await dbResumes.run(strQuery,[strKey])
         if(objResult.changes > 0) 
             res.status(201).json({outcome:"success", message:`Setting with id ${strKey} was deleted from tblSettings`})
         else 
@@ -205,7 +212,7 @@ app.get('/api/resumes/full/:id', async (req, res) => {
             return res.status(404).json({ outcome: "error", message: "Resume not found." })
 
         //fetch Jobs  
-        const strJobsQuery = `SELECT tblJobs.* FOM tblJobs LEFT JOIN tblResumeJobs ON tblJobs.JobID = tblResumeJobs.JobID WHERE tblResumeJobs.ResumeID = ?`
+        const strJobsQuery = `SELECT tblJobs.* FROM tblJobs LEFT JOIN tblResumeJobs ON tblJobs.JobID = tblResumeJobs.JobID WHERE tblResumeJobs.ResumeID = ?`
         const arrJobs = await dbResumes.all(strJobsQuery, [intResumeID])
 
         //fetch Skills
