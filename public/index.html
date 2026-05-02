@@ -83,6 +83,8 @@
                 <div class="row mb-4">
                     <div class="col-md-6 border-end">
                         <h4>Add Job Experience</h4>
+                        <!-- handled by app.js to locally store id in webpage without user knowing -->
+                        <input type="hidden" id="txtJobID">
                         <div class="mb-2">
                             <label for="txtComp" class="form-label">Company Name</label>
                             <input type="text" id="txtComp" class="form-control">
@@ -101,6 +103,8 @@
                     </div>
                     <div class="col-md-6">
                         <h4>Add Skill</h4>
+                        <!-- handled by app.js to locally store id in webpage without user knowing -->
+                        <input type="hidden" id="txtSkillID">
                         <div class="mb-2">
                             <label for="txtSkillName" class="form-label">Skill Name</label>
                             <input type="text" id="txtSkillName" class="form-control">
@@ -119,6 +123,8 @@
                 <div class="row">
                     <div class="col-md-6 border-end">
                         <h4>Add Education</h4>
+                        <!-- handled by app.js to locally store id in webpage without user knowing -->
+                        <input type="hidden" id="txtEduID">
                         <div class="mb-2">
                             <label for="txtEduTitle" class="form-label">Degree/Program Title</label>
                             <input type="text" id="txtEduTitle" class="form-control">
@@ -141,6 +147,8 @@
                     </div>
                     <div class="col-md-6">
                         <h4>Add Certificate</h4>
+                        <!-- handled by app.js to locally store id in webpage without user knowing -->
+                        <input type="hidden" id="txtCertID">
                         <div class="mb-2">
                             <label for="txtCertTitle" class="form-label">Certificate Title</label>
                             <input type="text" id="txtCertTitle" class="form-control">
@@ -163,6 +171,37 @@
                     </div>
                 </div>
             </div>
+            
+            <hr class="my-5">
+                <h3 class="mb-4">Manage Saved Records</h3>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-dark text-white fw-bold">Saved Jobs</div>
+                            <div class="card-body" id="divManageJobs"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-dark text-white fw-bold">Saved Skills</div>
+                            <div class="card-body" id="divManageSkills"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-dark text-white fw-bold">Saved Education</div>
+                            <div class="card-body" id="divManageEdu"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-dark text-white fw-bold">Saved Certificates</div>
+                            <div class="card-body" id="divManageCerts"></div>
+                        </div>
+                    </div>
+                </div>
+
         </div>
 
         <!-- Build resume -->
@@ -174,7 +213,7 @@
                 <div class="row g-3 mb-4">
                     <div class="col-12">
                         <label for="txtResTitle" class="form-label fw-bold">Document Title</label>
-                        <input type="text" id="txtResTitle" class="form-control" placeholder="e.g., Cyber Security Analyst 2026">
+                        <input type="text" id="txtResTitle" class="form-control" placeholder="ex. Cyber Security Analyst 2026">
                     </div>
                     <div class="col-md-6">
                         <label for="txtResName" class="form-label">Full Name</label>
