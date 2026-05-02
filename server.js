@@ -455,14 +455,14 @@ app.delete('/api/master/education/:id', async (req, res) => {
 //https://www.w3schools.com/js/js_loop_forof.asp   had to use for..of because forEach executed all database runs at once rather than waiting
 //https://www.geeksforgeeks.org/sqlite/sqlite-transaction/ uses TRANSACTION to rollback in case of potential insert errors and to keep everyting in one post
 app.post('/api/resumes/full', async (req, res) => {
-    const {strResumeTitle, arrJobIds, arrSkillIds, arrEduIds, arrCertIds} = req.body
+    const {strResumeTitle, strResumeObjective, strResumeName, strResumePhone, strResumeEmail, strResumeAddress, arrJobIds, arrSkillIds, arrEduIds, arrCertIds} = req.body
 
     try {
         await dbResumes.run("BEGIN TRANSACTION")
 
         //create main resume record
-        const strResumeQuery = "INSERT INTO tblResumes (ResumeTitle) VALUES (?)"
-        const objResumeResult = await dbResumes.run(strResumeQuery,[strResumeTitle])
+        const strResumeQuery = "INSERT INTO tblResumes (ResumeTitle, ResumeObjective, ResumeName, ResumePhone, ResumeEmail, ResumeAddress) VALUES (?,?,?,?,?,?)"
+        const objResumeResult = await dbResumes.run(strResumeQuery,[strResumeTitle,strResumeObjective,strResumeName,strResumePhone,strResumeEmail,strResumeAddress])
         
         //make sure resume row was created before proceeding
         if (objResumeResult.changes > 0) {

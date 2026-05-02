@@ -43,6 +43,11 @@ CREATE TABLE tblEducation (
 CREATE TABLE tblResumes (
     ResumeID INTEGER, 
     ResumeTitle TEXT NOT NULL, 
+    ResumeObjective TEXT NOT NULL,
+    ResumeName TEXT NOT NULL,
+    ResumePhone TEXT NOT NULL, 
+    ResumeEmail TEXT NOT NULL,
+    ResumeAddress TEXT NOT NULL,
     PRIMARY KEY("ResumeID" AUTOINCREMENT)
 );
 

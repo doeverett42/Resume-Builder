@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder</title>
+    <!-- Local Bootstrap and icons -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* UI State Styles */
+        .hidden { display: none !important; }
+        .clickable-card { cursor: pointer; border: 2px solid transparent; }
+        .selected-card { border-color: #0dcaf0 !important; background-color: #e0f7fa !important; }
+        
+        /* Resume Preview Formatting */
+        #divResumeContent { background: white; color: black; padding: 40px; }
+        .resume-header { border-bottom: 2px solid #000; margin-bottom: 20px; }
+        .resume-section { border-bottom: 1px solid #999; margin-top: 20px; font-weight: bold; text-transform: uppercase; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            #divResumeContent { padding: 0; border: none; }
+            main { display: block !important; padding: 0; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <main class="container py-4">
+        
+        <!-- Navigation Top Bar -->
+        <div class="d-flex justify-content-center gap-2 mb-4 no-print" role="toolbar" aria-label="Main Navigation">
+            <button class="btn btn-secondary d-flex align-items-center gap-2" id="btnNavHome">
+                <i class="bi bi-house" aria-hidden="true"></i> Home
+            </button>
+            <button class="btn btn-secondary d-flex align-items-center gap-2" id="btnNavSettings">
+                <i class="bi bi-gear" aria-hidden="true"></i> Settings
+            </button>
+            <button class="btn btn-secondary d-flex align-items-center gap-2" id="btnNavRecords">
+                <i class="bi bi-database" aria-hidden="true"></i> Records
+            </button>
+            <button class="btn btn-secondary d-flex align-items-center gap-2" id="btnNavBuild">
+                <i class="bi bi-tools" aria-hidden="true"></i> Build
+            </button>
+            <button class="btn btn-secondary d-flex align-items-center gap-2" id="btnNavView">
+                <i class="bi bi-eye" aria-hidden="true"></i> View
+            </button>
+        </div>
+
+        <!-- Home Section -->
+        <div id="secHome" class="card shadow-sm mb-4 no-print" role="region" aria-labelledby="homeHeading">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-file-earmark-person display-1 text-primary mb-3" role="img" aria-label="Resume illustration"></i>
+                <h1 id="homeHeading" class="display-5 fw-bold mb-3">Resume Builder</h1>
+                <p class="lead text-muted mb-4">Speedrun your professional resumes!</p>
+                <button class="btn btn-primary btn-lg px-5 shadow-sm d-inline-flex align-items-center gap-2" id="btnHomeStart">
+                    Get Started <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="secSettings" class="card shadow-sm mb-4 no-print hidden" role="region" aria-labelledby="settingsHeading">
+            <div class="card-body">
+                <h3 id="settingsHeading">API Settings</h3>
+                <hr>
+                <div class="mb-3">
+                    <label for="txtApiKey" class="form-label">Gemini API Key</label>
+                    <input type="password" id="txtApiKey" class="form-control" placeholder="Enter your key here">
+                </div>
+                <button class="btn btn-primary w-100" id="btnSaveKey">Save Configuration</button>
+            </div>
+        </div>
+
+        <!-- Master Records Section -->
+        <div id="secMaster" class="card shadow-sm mb-4 no-print hidden" role="region" aria-labelledby="recordsHeading">
+            <div class="card-body">
+                <h3 id="recordsHeading" class="mb-4">Data Repository</h3>
+                
+                <!-- Jobs and Skills Row -->
+                <div class="row mb-4">
+                    <div class="col-md-6 border-end">
+                        <h4>Add Job Experience</h4>
+                        <div class="mb-2">
+                            <label for="txtComp" class="form-label">Company Name</label>
+                            <input type="text" id="txtComp" class="form-control">
+                        </div>
+                        <div class="mb-2">
+                            <label for="txtRole" class="form-label">Job Title</label>
+                            <input type="text" id="txtRole" class="form-control">
+                        </div>
+                        <div class="mb-2">
+                            <label for="txtDetails" class="form-label">Key Achievements</label>
+                            <textarea id="txtDetails" class="form-control" rows="3"></textarea>
+                        </div>
+                        <button class="btn btn-sm btn-outline-info mb-2 w-100" id="btnReviewAI">Optimize with AI</button>
+                        <div id="divAiOutput" class="alert alert-info hidden" role="status" aria-live="polite"></div>
+                        <button class="btn btn-success w-100" id="btnSaveJob">Save Experience</button>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Add Technical Skill</h4>
+                        <div class="mb-2">
+                            <label for="txtSkillName" class="form-label">Skill Name</label>
+                            <input type="text" id="txtSkillName" class="form-control">
+                        </div>
+                        <div class="mb-2">
+                            <label for="txtSkillCat" class="form-label">Category</label>
+                            <input type="text" id="txtSkillCat" class="form-control">
+                        </div>
+                        <button class="btn btn-success w-100 mt-4" id="btnSaveSkill">Save Skill</button>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Education and Certificates Row -->
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <h4>Add Education</h4>
+                        <div class="mb-2">
+                            <label for="txtEduTitle" class="form-label">Degree/Program Title</label>
+                            <input type="text" id="txtEduTitle" class="form-control">
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label for="txtEduStart" class="form-label">Start Date</label>
+                                <input type="text" id="txtEduStart" class="form-control" placeholder="MM/YYYY">
+                            </div>
+                            <div class="col">
+                                <label for="txtEduEnd" class="form-label">End Date</label>
+                                <input type="text" id="txtEduEnd" class="form-control" placeholder="MM/YYYY or Present">
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="txtEduHonors" class="form-label">Honors/Details</label>
+                            <input type="text" id="txtEduHonors" class="form-control">
+                        </div>
+                        <button class="btn btn-success w-100" id="btnSaveEdu">Save Education</button>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Add Certificate</h4>
+                        <div class="mb-2">
+                            <label for="txtCertTitle" class="form-label">Certificate Title</label>
+                            <input type="text" id="txtCertTitle" class="form-control">
+                        </div>
+                        <div class="mb-2">
+                            <label for="txtCertIssuer" class="form-label">Issuing Organization</label>
+                            <input type="text" id="txtCertIssuer" class="form-control">
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <label for="txtCertIssueDate" class="form-label">Issue Date</label>
+                                <input type="text" id="txtCertIssueDate" class="form-control">
+                            </div>
+                            <div class="col">
+                                <label for="txtCertExpDate" class="form-label">Expiration</label>
+                                <input type="text" id="txtCertExpDate" class="form-control">
+                            </div>
+                        </div>
+                        <button class="btn btn-success w-100" id="btnSaveCert">Save Certificate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Build Resume Section -->
+        <div id="secBuild" class="card shadow-sm mb-4 no-print hidden" role="region" aria-labelledby="buildHeading">
+            <div class="card-body">
+                <h3 id="buildHeading">Assemble Custom Resume</h3>
+                
+                <!-- Resume Metadata and Contact Info -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <label for="txtResTitle" class="form-label fw-bold">Document Title</label>
+                        <input type="text" id="txtResTitle" class="form-control" placeholder="e.g., Cyber Security Analyst 2026">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="txtResName" class="form-label">Full Name</label>
+                        <input type="text" id="txtResName" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="txtResEmail" class="form-label">Email Address</label>
+                        <input type="email" id="txtResEmail" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="txtResPhone" class="form-label">Phone Number</label>
+                        <input type="text" id="txtResPhone" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="txtResAddress" class="form-label">Location/Address</label>
+                        <input type="text" id="txtResAddress" class="form-control" placeholder="Address, City, State">
+                    </div>
+                    <div class="col-12">
+                        <label for="txtResObjective" class="form-label">Professional Objective</label>
+                        <textarea id="txtResObjective" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <!-- Selection Grids -->
+                <h6 class="text-muted">Select Experience:</h6>
+                <div class="row row-cols-md-3 g-3 mb-4" id="divJobGrid" role="listbox" aria-label="Experience selection grid"></div>
+                
+                <h6 class="text-muted">Select Education:</h6>
+                <div class="row row-cols-md-3 g-3 mb-4" id="divEduGrid" role="listbox" aria-label="Education selection grid"></div>
+
+                <h6 class="text-muted">Select Certificates:</h6>
+                <div class="row row-cols-md-3 g-3 mb-4" id="divCertGrid" role="listbox" aria-label="Certificates selection grid"></div>
+
+                <h6 class="text-muted">Select Skills:</h6>
+                <div class="row row-cols-md-5 g-2 mb-4" id="divSkillGrid" role="listbox" aria-label="Skills selection grid"></div>
+                
+                <button class="btn btn-primary w-100 py-3 fw-bold" id="btnSaveResume">Generate Final Resume</button>
+            </div>
+        </div>
+
+        <!-- View Resume Section -->
+        <div id="secView" class="hidden" role="region" aria-labelledby="viewHeading">
+            <h3 id="viewHeading" class="visually-hidden">Resume Preview</h3>
+            <div class="card shadow-sm mb-4 no-print">
+                <div class="card-body d-flex flex-wrap gap-2 justify-content-center" id="divResumeList" role="group" aria-label="Saved Resumes"></div>
+            </div>
+            <div id="divResumeContent" class="border shadow-sm mx-auto bg-white" aria-live="assertive">
+                <p class="text-center py-5 text-muted">Please select a resume from the list above to preview it.</p>
+            </div>
+            <div class="text-center mt-3 no-print">
+                <button class="btn btn-dark d-inline-flex align-items-center gap-2" id="btnPrint">
+                    <i class="bi bi-printer" aria-hidden="true"></i> Print to PDF
+                </button>
+            </div>
+        </div>
+
+    </main>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
