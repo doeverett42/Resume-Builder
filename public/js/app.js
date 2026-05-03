@@ -537,43 +537,48 @@ document.querySelector('#btnSaveCert').addEventListener('click', async () => {
 
 //Master Resume Info Deleter
 document.querySelector('#divMaster').addEventListener('click', async (objEvent) => {
-    const strElementID = objEvent.target.id 
-    let strType = ''
-    let intID = ''
+    try {
+        const strElementID = objEvent.target.id 
+        let strType = ''
+        let intID = ''
 
-    if(strElementID.includes('btnDelete')) {
-        if(strElementID.includes('btnDeleteJob')) {
-            strType = 'jobs'
-            intID = strElementID.replace('btnDeleteJob', '')
-        } else if(strElementID.includes('btnDeleteSkill')) {
-            strType = 'skills'
-            intID = strElementID.replace('btnDeleteSkill', '')
-        } else if(strElementID.includes('btnDeleteCert')) {
-            strType = 'certificates'
-            intID = strElementID.replace('btnDeleteCert', '')
-        } else if(strElementID.includes('btnDeleteEdu')) {
-            strType = 'education'
-            intID = strElementID.replace('btnDeleteEdu', '')
+        if(strElementID.includes('btnDelete')) {
+            if(strElementID.includes('btnDeleteJob')) {
+                strType = 'jobs'
+                intID = strElementID.replace('btnDeleteJob', '')
+            } else if(strElementID.includes('btnDeleteSkill')) {
+                strType = 'skills'
+                intID = strElementID.replace('btnDeleteSkill', '')
+            } else if(strElementID.includes('btnDeleteCert')) {
+                strType = 'certificates'
+                intID = strElementID.replace('btnDeleteCert', '')
+            } else if(strElementID.includes('btnDeleteEdu')) {
+                strType = 'education'
+                intID = strElementID.replace('btnDeleteEdu', '')
+            }
+
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "This will also remove this item from any saved resumes!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!'
+            })
+
+            if(result.isConfirmed) {
+                const response = await fetch(`api/master/${strType}/${intID}`, {method:'DELETE'})
+                const data = await response.json() 
+                if(data.outcome == 'success') {
+                    loadJobs() 
+                    loadSkills()
+                    loadEducation()
+                    loadCertifications()
+                } else 
+                    throw new Error(data.message)
+            }
         }
-
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: "This will also remove this item from any saved resumes!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!'
-        })
-
-        if(result.isConfirmed) {
-            const response = await fetch(`api/master/${strType}/${intID}`, {method:'DELETE'})
-            const data = await response.json() 
-            if(data.outcome == 'success') {
-                loadJobs() 
-                loadSkills()
-                loadEducation()
-                loadCertifications()
-            }            
-        }
+    } catch (objError) {
+        console.error("Error deleting resume info: ", objError)
     }
 })
 
@@ -732,14 +737,44 @@ async function loadSavedResumes() {
         const response = await fetch('/api/resumes')
         const result = await response.json()
         
-        let htmlBtns = ''
+        let htmlCards = ''
         result.data.forEach(resume => {
-            htmlBtns += `<button class="btn btn-outline-primary m-1" onclick="renderResume(${resume.ResumeID}, event)">${resume.ResumeTitle}</button>`
+            htmlCards += `
+                <div class="card text-center text-bg-dark">
+                    <div class="card-header">${resume.ResumeTitle}</div>
+                    <div class="card-body">
+                        <button class="btn btn-outline-info m-1" onclick="renderResume(${resume.ResumeID}, event)">Preview</button>
+                        <button class="btn btn-outline-danger m-1" onclick="deleteResume(${resume.ResumeID}, event)">Delete</button>
+                    </div>
+                </div>`
         })
         
-        document.getElementById('divResumeList').innerHTML = htmlBtns || '<p class="text-muted small w-100 text-center">No resumes generated yet.</p>'
+        document.getElementById('divResumeList').innerHTML = htmlCards || '<p class="text-muted small w-100 text-center">No resumes generated yet.</p>'
     } catch(objError) {
         console.error("Error loading resumes: ", objError)
+    }
+}
+
+//delete seletected resume 
+async function deleteResume(intResumeID, objEvent) {
+    try {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!'
+        })
+
+        if(result.isConfirmed) {
+            const response = await fetch(`/api/resumes/full/${intResumeID}`, {method:'DELETE'})
+            const data = await response.json()
+            if(data.outcome == 'success')
+                loadSavedResumes()    
+            else 
+                throw new Error(data.message)        
+        }
+    } catch (objError) {
+        console.error('Error deleting resume: ', objError)
     }
 }
 
@@ -769,7 +804,10 @@ window.renderResume = async function(intResumeID, objEvent) {
             data.arrJobs.forEach(job => {
                 html += `
                     <div class="mt-3">
-                        <strong class="fs-5">${job.Role}</strong> - <em>${job.Company}</em>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div><strong class="fs-5">${job.Role}</strong> - <em>${job.Company}</em></div>
+                            <div class="text-muted">${job.StartDate} — ${job.EndDate}</div>
+                        </div>
                         <div class="mt-1">${job.Details}</div>
                     </div>
                 `
@@ -782,7 +820,7 @@ window.renderResume = async function(intResumeID, objEvent) {
                 html += `
                     <div class="mt-3 d-flex justify-content-between align-items-center">
                         <div><strong class="fs-5">${edu.Title}</strong></div>
-                        <div class="text-muted">${edu.StartDate} - ${edu.EndDate}</div>
+                        <div class="text-muted">${edu.StartDate} — ${edu.EndDate}</div>
                     </div>
                     ${edu.Honors ? `<div class="mt-1"><em>${edu.Honors}</em></div>` : ''}
                 `
@@ -792,19 +830,44 @@ window.renderResume = async function(intResumeID, objEvent) {
         if(data.arrCertificates && data.arrCertificates.length > 0) {
             html += `<div class="resume-section">Certifications</div><ul class="mt-2">`
             data.arrCertificates.forEach(cert => {
-                html += `<li><strong>${cert.Title}</strong> (${cert.Issuer}) - Valid: ${cert.IssueDate} to ${cert.ExpirationDate}</li>`
+                html += `<li>
+                            <div class ="d-flex justify-content-between align-items-center">
+                                <div><strong>${cert.Title}</strong> (${cert.Issuer})</div>
+                                <div class="text-muted">${cert.IssueDate} — ${cert.ExpirationDate}</div>
+                            </div>
+                        </li>`
             })
             html += `</ul>`
         }
-
-        //render Skills
+        //render Skills grouped by category
         if(data.arrSkills && data.arrSkills.length > 0) {
-            html += `<div class="resume-section">Skills</div><p class="mt-2 fs-6">`
-            const skills = data.arrSkills.map(skill => skill.SkillName).join(' <span class="text-muted fw-bold px-1">•</span> ')
-            html += `${skills}</p>`
-        }
+            html += `<div class="resume-section">Skills</div><ul class="mt-2">`
+            
+            let arrProcessedCategories = []
 
-        //inject compiled HTML into the viewer
+            data.arrSkills.forEach(skill => {
+                const strCat = skill.Category
+
+                //check if category already exists
+                if (!arrProcessedCategories.includes(strCat)) {
+                    //filter all skills matching this category
+                    const arrMatchingSkills = data.arrSkills.filter(s => (s.Category) == strCat).map(s => s.SkillName)
+
+                    //add to HTML
+                    html += `
+                        <li class="mb-1">
+                            <strong>${strCat}:</strong> ${arrMatchingSkills.join(', ')}
+                        </li>`
+
+                    //add unique categories we don't repeat the bullet point
+                    arrProcessedCategories.push(strCat);
+                }
+            })
+
+            html += `</ul>`
+}
+
+        //put compiled HTML into the viewer
         document.getElementById('divResumeContent').innerHTML = html
 
         //visual handling for active button states
