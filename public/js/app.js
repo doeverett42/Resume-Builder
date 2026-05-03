@@ -3,6 +3,7 @@ loadJobs()
 loadSkills()
 loadEducation()
 loadCertifications() 
+loadSavedResumes()
 
 /**
  *      NAVIGATION FUNCTIONALITY
@@ -472,7 +473,7 @@ document.querySelector('#btnSaveEdu').addEventListener('click', async () => {
     const strEnd = document.getElementById('txtEduEnd').value.trim()
     const strHonors = document.getElementById('txtEduHonors').value.trim()
 
-    if(!validateInput([{name:'Education Title',value:strTitle},{name:'Start Date',value:strStart},{name:'End Date',value:strEnd},{name:'Honors',value:strHonors}]))
+    if(!validateInput([{name:'Education Title',value:strTitle},{name:'Start Date',value:strStart},{name:'End Date',value:strEnd}]))
         return 
 
     try {
@@ -653,3 +654,172 @@ document.querySelector('#btnObjReviewAI').addEventListener('click', async (objEv
         btnOptimize.innerHTML = 'Optimize with AI'
     }
 })
+
+/**
+ *      RESUME ASSEMBLY & SAVING
+ */
+document.querySelector('#btnSaveResume').addEventListener('click', async () => {
+    //get text inputs
+    const strResumeTitle = document.getElementById('txtResTitle').value.trim()
+    const strResumeName = document.getElementById('txtResName').value.trim()
+    const strResumeEmail = document.getElementById('txtResEmail').value.trim()
+    const strResumePhone = document.getElementById('txtResPhone').value.trim()
+    const strResumeAddress = document.getElementById('txtResAddress').value.trim()
+    const strResumeObjective = quillObjective.root.innerHTML
+
+    if (!validateInput([
+        {name:'Document Title', value:strResumeTitle},
+        {name:'Full Name', value:strResumeName},
+        {name:'Email Address', value:strResumeEmail},
+        {name:'Phone', value:strResumePhone},
+        {name:'Address', value:strResumeAddress}, 
+        {name:'Objective', value:strResumeObjective}
+    ])) 
+        return
+
+    //get checked IDs from container grids
+    const arrJobIds = Array.from(document.querySelectorAll('#divJobGrid input:checked')).map(cb => cb.value)
+    const arrEduIds = Array.from(document.querySelectorAll('#divEduGrid input:checked')).map(cb => cb.value)
+    const arrCertIds = Array.from(document.querySelectorAll('#divCertGrid input:checked')).map(cb => cb.value)
+    const arrSkillIds = Array.from(document.querySelectorAll('#divSkillGrid input:checked')).map(cb => cb.value)
+
+    //build payload matching /api/resumes/full POST route
+    const payload = {
+        strResumeTitle, strResumeObjective, strResumeName, strResumePhone, strResumeEmail, strResumeAddress,
+        arrJobIds, arrSkillIds, arrEduIds, arrCertIds
+    }
+
+    try {
+        const response = await fetch('/api/resumes/full', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        const data = await response.json()
+
+        if (data.outcome === 'success') {
+            Swal.fire({title:'Success', text:data.message, icon:'success'})
+            
+            //clear inputs and checkboxes
+            document.querySelectorAll('#divBuild input[type="text"], #divBuild input[type="email"]').forEach(input => input.value = '')
+            quillObjective.setContents([])
+            document.querySelectorAll('#divBuild input[type="checkbox"]').forEach(cb => cb.checked = false)
+
+            //refresh the View tab list and navigate to it
+            loadSavedResumes()
+            document.querySelector('#btnNavView').click()
+        } else {
+            throw new Error(data.message)
+        }
+    } catch(objError) {
+        Swal.fire({title:'Error', text:objError.message, icon:'error'})
+    }
+})
+
+/**
+ *      VIEW & PRINT FUNCTIONALITY 
+ */
+async function loadSavedResumes() {
+    try {
+        const response = await fetch('/api/resumes')
+        const result = await response.json()
+        
+        let htmlBtns = ''
+        result.data.forEach(resume => {
+            htmlBtns += `<button class="btn btn-outline-primary m-1" onclick="renderResume(${resume.ResumeID}, event)">${resume.ResumeTitle}</button>`
+        })
+        
+        document.getElementById('divResumeList').innerHTML = htmlBtns || '<p class="text-muted small w-100 text-center">No resumes generated yet.</p>'
+    } catch(objError) {
+        console.error("Error loading resumes: ", objError)
+    }
+}
+
+//render selected resume into html format 
+window.renderResume = async function(intResumeID, objEvent) {
+    try {
+        const response = await fetch(`/api/resumes/full/${intResumeID}`)
+        const result = await response.json()
+        const data = result.data
+
+        //build HTML mapping to CSS classes (.resume-header, .resume-section) which were made by AI 
+        let html = `
+            <div class="resume-header text-center">
+                <h1 class="display-4 fw-bold mb-1">${data.strResumeName}</h1>
+                <p class="mb-2">
+                    <span>${data.strResumeEmail}</span>
+                    | <span>${data.strResumePhone}</span>
+                    | <span>${data.strResumeAddress}</span>
+                </p>
+            </div>
+            <div class="resume-section">Objective</div>
+            <div class="mt-2">${data.strResumeObjective}</div>
+        `
+        //render jobs
+        if(data.arrJobs && data.arrJobs.length > 0) {
+            html += `<div class="resume-section">Experience</div>`
+            data.arrJobs.forEach(job => {
+                html += `
+                    <div class="mt-3">
+                        <strong class="fs-5">${job.Role}</strong> - <em>${job.Company}</em>
+                        <div class="mt-1">${job.Details}</div>
+                    </div>
+                `
+            })
+        }
+        //render Education
+        if(data.arrEducation && data.arrEducation.length > 0) {
+            html += `<div class="resume-section">Education</div>`
+            data.arrEducation.forEach(edu => {
+                html += `
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                        <div><strong class="fs-5">${edu.Title}</strong></div>
+                        <div class="text-muted">${edu.StartDate} - ${edu.EndDate}</div>
+                    </div>
+                    ${edu.Honors ? `<div class="mt-1"><em>${edu.Honors}</em></div>` : ''}
+                `
+            })
+        }
+        //render Certificates
+        if(data.arrCertificates && data.arrCertificates.length > 0) {
+            html += `<div class="resume-section">Certifications</div><ul class="mt-2">`
+            data.arrCertificates.forEach(cert => {
+                html += `<li><strong>${cert.Title}</strong> (${cert.Issuer}) - Valid: ${cert.IssueDate} to ${cert.ExpirationDate}</li>`
+            })
+            html += `</ul>`
+        }
+
+        //render Skills
+        if(data.arrSkills && data.arrSkills.length > 0) {
+            html += `<div class="resume-section">Skills</div><p class="mt-2 fs-6">`
+            const skills = data.arrSkills.map(skill => skill.SkillName).join(' <span class="text-muted fw-bold px-1">•</span> ')
+            html += `${skills}</p>`
+        }
+
+        //inject compiled HTML into the viewer
+        document.getElementById('divResumeContent').innerHTML = html
+
+        //visual handling for active button states
+        if(objEvent) {
+            document.querySelectorAll('#divResumeList button').forEach(btn => {
+                btn.classList.remove('btn-primary', 'text-white')
+                btn.classList.add('btn-outline-primary')
+            })
+            objEvent.target.classList.remove('btn-outline-primary')
+            objEvent.target.classList.add('btn-primary', 'text-white')
+        }
+
+    } catch(objError) {
+        Swal.fire({title:'Error', text:'Failed to load resume details.', icon:'error'})
+        console.error(objError)
+    }
+}
+
+//print to pdf functionality 
+document.getElementById('btnPrint').addEventListener('click', () => {
+    //only attempt print if a resume has been loaded
+    if (document.querySelector('.resume-header')) 
+        window.print()
+    else
+        Swal.fire({title:'Wait', text:'Please select a resume to preview before printing.', icon:'info'})
+})  

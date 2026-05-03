@@ -252,7 +252,7 @@ app.get('/api/resumes/full/:id', async (req, res) => {
             strResumeName: objResume.ResumeName,
             strResumePhone: objResume.ResumePhone,
             strResumeEmail: objResume.ResumeEmail,
-            strResumeAddress: objResume.Address,
+            strResumeAddress: objResume.ResumeAddress,
             arrJobs: arrJobs,
             arrSkills: arrSkills,
             arrEducation: arrEducation,
