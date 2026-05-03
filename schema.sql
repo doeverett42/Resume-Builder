@@ -10,6 +10,8 @@ CREATE TABLE tblJobs (
     JobID INTEGER, 
     Company TEXT NOT NULL, 
     Role TEXT NOT NULL, 
+    StartDate TEXT NOT NULL,
+    EndDate TEXT NOT NULL,
     Details TEXt NOT NULL, 
     PRIMARY KEY("JobID" AUTOINCREMENT)
 );

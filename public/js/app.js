@@ -198,6 +198,8 @@ async function loadJobs() {
                             <div class="card-body">
                                 <p>Company: ${job.Company}</p>
                                 <p>Role: ${job.Role}</p>
+                                <p>Start: ${job.StartDate}</p>
+                                <p>End: ${job.EndDate}</p>
                                 <span>Details:
                                     <div class="ql-snow">
                                         <div class="ql-editor" style="padding: 0;">
@@ -226,6 +228,8 @@ async function loadJobs() {
                                     <div class="card-body">
                                         <p>Company: ${job.Company}</p>
                                         <p>Role: ${job.Role}</p>
+                                        <p>Start: ${job.StartDate}</p>
+                                        <p>End: ${job.EndDate}</p>
                                         <p>Details: ${job.Details}</p>
                                     </div> 
                                 </div>
@@ -415,22 +419,26 @@ async function loadCertifications() {
 document.querySelector('#btnSaveJob').addEventListener('click', async () => {
     const strCompany = document.getElementById('txtComp').value.trim()
     const strRole = document.getElementById('txtRole').value.trim()
+    const strStart = document.getElementById('txtStart').value.trim()
+    const strEnd = document.getElementById('txtEnd').value.trim()
     const strDetails = quillDetails.root.innerHTML
     const strRawText = quillDetails.getText().trim()
 
-    if(!validateInput([{name:'Company Name',value:strCompany},{name:'Job Title',value:strRole},{name:'Details',value:strRawText}]))
+    if(!validateInput([{name:'Company Name',value:strCompany},{name:'Job Title',value:strRole},{name:'Start Date',value:strStart},{name:'End Date',value:strEnd},{name:'Details',value:strRawText}]))
         return 
 
     try {
         const response = await fetch('/api/master/jobs', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({strCompany:strCompany, strRole:strRole, strDetails:strDetails})
+            body: JSON.stringify({strCompany:strCompany, strRole:strRole, strStartDate:strStart, strEndDate:strEnd, strDetails:strDetails})
         })
         const data = await response.json() 
         if(data.outcome == 'success') {
             document.getElementById('txtComp').value = ''
             document.getElementById('txtRole').value = ''
+            document.getElementById('txtStart').value = ''
+            document.getElementById('txtEnd').value = ''
             quillDetails.setContents([])
             loadJobs() 
         } else 

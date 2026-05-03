@@ -116,9 +116,9 @@ app.get('/api/master/jobs', async (req, res) => {
     try {
         const strQuery = "SELECT * FROM tblJobs"
         const arrRows = await dbResumes.all(strQuery)
-        res.status(200).json({ outcome: "success", data: arrRows })
+        res.status(200).json({outcome: "success", data: arrRows})
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -126,9 +126,9 @@ app.get('/api/master/skills', async (req, res) => {
     try {
         const strQuery = "SELECT * FROM tblSkills"
         const arrRows = await dbResumes.all(strQuery)
-        res.status(200).json({ outcome: "success", data: arrRows })
+        res.status(200).json({outcome: "success", data: arrRows})
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -136,9 +136,9 @@ app.get('/api/master/certificates', async (req, res) => {
     try {
         const strQuery = "SELECT * FROM tblCertificates"
         const arrRows = await dbResumes.all(strQuery)
-        res.status(200).json({ outcome: "success", data: arrRows })
+        res.status(200).json({outcome: "success", data: arrRows})
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -146,9 +146,9 @@ app.get('/api/master/education', async (req, res) => {
     try {
         const strQuery = "SELECT * FROM tblEducation"
         const arrRows = await dbResumes.all(strQuery)
-        res.status(200).json({ outcome: "success", data: arrRows })
+        res.status(200).json({outcome: "success", data: arrRows})
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -157,11 +157,11 @@ app.get('/api/master/jobs/:id', async (req, res) => {
         const strQuery = "SELECT * FROM tblJobs WHERE JobID = ?"
         const objRow = await dbResumes.get(strQuery, [req.params.id])
         if (objRow) 
-            res.status(200).json({ outcome: "success", data: objRow })
+            res.status(200).json({outcome: "success", data: objRow})
         else 
-            res.status(404).json({ outcome: "error", message: "Job not found." })
+            res.status(404).json({outcome: "error", message: "Job not found." })
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -170,11 +170,11 @@ app.get('/api/master/skills/:id', async (req, res) => {
         const strQuery = "SELECT * FROM tblSkills WHERE SkillID = ?"
         const objRow = await dbResumes.get(strQuery, [req.params.id])
         if (objRow) 
-            res.status(200).json({ outcome: "success", data: objRow })
+            res.status(200).json({outcome: "success", data: objRow })
         else 
-            res.status(404).json({ outcome: "error", message: "Skill not found." })
+            res.status(404).json({outcome: "error", message: "Skill not found." })
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -183,11 +183,11 @@ app.get('/api/master/certificates/:id', async (req, res) => {
         const strQuery = "SELECT * FROM tblCertificates WHERE CertID = ?"
         const objRow = await dbResumes.get(strQuery, [req.params.id])
         if (objRow) 
-            res.status(200).json({ outcome: "success", data: objRow })
+            res.status(200).json({outcome: "success", data: objRow })
         else 
-            res.status(404).json({ outcome: "error", message: "Certificate not found." })
+            res.status(404).json({outcome: "error", message: "Certificate not found." })
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -196,11 +196,11 @@ app.get('/api/master/education/:id', async (req, res) => {
         const strQuery = "SELECT * FROM tblEducation WHERE EducationID = ?"
         const objRow = await dbResumes.get(strQuery, [req.params.id])
         if (objRow) 
-            res.status(200).json({ outcome: "success", data: objRow })
+            res.status(200).json({outcome: "success", data: objRow })
         else 
-            res.status(404).json({ outcome: "error", message: "Education entry not found." })
+            res.status(404).json({outcome: "error", message: "Education entry not found." })
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -208,9 +208,9 @@ app.get('/api/resumes', async (req, res) => {
     try {
         const strQuery = "SELECT * FROM tblResumes"
         const arrRows = await dbResumes.all(strQuery)
-        res.status(200).json({ outcome: "success", data: arrRows })
+        res.status(200).json({outcome: "success", data: arrRows })
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -226,7 +226,7 @@ app.get('/api/resumes/full/:id', async (req, res) => {
         const objResume = await dbResumes.get(strResumeQuery, [intResumeID])
 
         if (!objResume) 
-            return res.status(404).json({ outcome: "error", message: "Resume not found." })
+            return res.status(404).json({outcome: "error", message: "Resume not found." })
 
         //fetch Jobs  
         const strJobsQuery = `SELECT tblJobs.* FROM tblJobs LEFT JOIN tblResumeJobs ON tblJobs.JobID = tblResumeJobs.JobID WHERE tblResumeJobs.ResumeID = ?`
@@ -259,10 +259,10 @@ app.get('/api/resumes/full/:id', async (req, res) => {
             arrCertificates: arrCertificates
         }
 
-        res.status(200).json({ outcome: "success", data: objFullResume })
+        res.status(200).json({outcome: "success", data: objFullResume })
 
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message: objError.message })
+        res.status(500).json({outcome: "error", message: objError.message})
     }
 })
 
@@ -270,15 +270,15 @@ app.get('/api/resumes/full/:id', async (req, res) => {
 //POSTs for all resume information
 app.post('/api/master/jobs', async (req, res) => {
     try {
-        const {strCompany, strRole, strDetails} = req.body
-        const strQuery = "INSERT INTO tblJobs (Company, Role, Details) VALUES (?, ?, ?)"
-        const objResult = await dbResumes.run(strQuery, [strCompany, strRole, strDetails])
+        const {strCompany, strRole, strStartDate, strEndDate, strDetails} = req.body
+        const strQuery = "INSERT INTO tblJobs (Company, Role, StartDate, EndDate, Details) VALUES (?, ?, ?, ?, ?)"
+        const objResult = await dbResumes.run(strQuery, [strCompany, strRole, strStartDate, strEndDate, strDetails])
         if(objResult.changes > 0)
             res.status(201).json({outcome: "success", message:`Job with id ${objResult.lastID} created.`, intNewID:objResult.lastID})
         else 
             res.status(400).json({outcome:"error", message:"Job was not created."})
     } catch (objError) {
-        res.status(500).json({ outcome: "error", message:objError.message})
+        res.status(500).json({outcome: "error", message:objError.message})
     }
 })
 
@@ -330,9 +330,9 @@ app.post('/api/master/education', async (req, res) => {
 //PUTS for all resume information; not currently used but possible future addition 
 app.put('/api/master/jobs', async (req, res) => {
     try {
-        const {strJobID, strCompany, strRole, strDetails} = req.body
-        const strQuery = "UPDATE tblJobs SET Company = ?, Role = ?, Details = ? WHERE JobID = ?"
-        const objResult = await dbResumes.run(strQuery, [strCompany,strRole,strDetails, strJobID])
+        const {strJobID, strCompany, strRole, strStartDate, strEndDate, strDetails} = req.body
+        const strQuery = "UPDATE tblJobs SET Company = ?, Role = ?, StartDate = ?, EndDate = ?, Details = ? WHERE JobID = ?"
+        const objResult = await dbResumes.run(strQuery, [strCompany,strRole,strStartDate,strEndDate,strDetails, strJobID])
         
         if (objResult.changes > 0)
             res.status(200).json({outcome:"success", message:`Job ${strJobID} updated.`})
