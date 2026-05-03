@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai")
+const { GoogleGenAI } = require("@google/genai")
 const express = require("express")
 const sqlite3 = require("sqlite3")
 //sqlite wrapper used as advised by Google Gemini AI in order to adapt the native callback-based sqlite3 into a promise-based interface
@@ -10,7 +10,7 @@ const dotenv = require('dotenv').config()
 const app = express() 
 const HTTP_PORT = process.env.HTTP_PORT
 // Initialize the Google GenAI client with the API key from our .env file
-let genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+let genAI = new GoogleGenAI(process.env.GEMINI_API_KEY)
 // identify the model we want to use for story generation
 const model = "gemini-3-flash-preview"
 
@@ -36,15 +36,16 @@ const initDb = async () => {
     }
 }
 
-//Route to optimize job details with Gemini AI
+//Route to optimize text with Gemini AI
+//Gemini AI helped with the syntax and methods I needed to use in order for it to function
 app.post('/api/optimize', async (req,res) => {
     try {
-        const {role,details} = req.body 
-        const prompt = `Imagine you're an experienced recruiter. Rewrite the following job details for a ${role} to sound highly professional, action-oriented, and tailored for a resume. Keept it concise: ${details}`
-        const model = genAI.getGenerativeModel({model: model})  
-        const result = await model.generateContent(prompt)
-        const response = await result.response 
-        const text = response.text()  
+        const strPrompt = req.body.strPrompt
+        const response = await genAI.models.generateContent({
+            model: model,
+            contents: strPrompt,
+        })
+        const text = response.text
 
         res.status(200).json({outcome:"success", optimizedText: text})
     } catch (objError) {
@@ -235,6 +236,11 @@ app.get('/api/resumes/full/:id', async (req, res) => {
         const objFullResume = {
             intResumeID: objResume.ResumeID,
             strResumeTitle: objResume.ResumeTitle,
+            strResumeObjective: objResume.ResumeObjective,
+            strResumeName: objResume.ResumeName,
+            strResumePhone: objResume.ResumePhone,
+            strResumeEmail: objResume.ResumeEmail,
+            strResumeAddress: objResume.Address,
             arrJobs: arrJobs,
             arrSkills: arrSkills,
             arrEducation: arrEducation,

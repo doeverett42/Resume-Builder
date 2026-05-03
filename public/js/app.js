@@ -1,3 +1,4 @@
+//Load all data on startup
 loadJobs()
 loadSkills()
 loadEducation()
@@ -181,7 +182,13 @@ async function loadJobs() {
                             <div class="card-body">
                                 <p>Company: ${job.Company}</p>
                                 <p>Role: ${job.Role}</p>
-                                <p>Details: ${job.Details}</p>
+                                <span>Details:
+                                    <div class="ql-snow">
+                                        <div class="ql-editor" style="padding: 0;">
+                                            ${job.Details}
+                                        </div>
+                                    </div>
+                                </span>
                             </div> 
                         </div>
                     </div> 
@@ -539,5 +546,49 @@ document.querySelector('#divMaster').addEventListener('click', async (objEvent) 
                 loadCertifications()
             }            
         }
+    }
+})
+
+/**
+ *      AI Optimizers Functionality 
+ */
+//Job Details Optimizer 
+document.querySelector('#btnJobReviewAI').addEventListener('click', async (objEvent) => {
+    const btnOptimize = objEvent.target
+    const divAiOutput = document.getElementById('divJobAiOutput')
+    const strRole = document.getElementById('txtRole').value.trim()
+    const strDetails = quillDetails.getText().trim()
+
+    if(!validateInput([{name:'Job Title',value:strRole},{name:'Details',value:strDetails}]))
+        return
+
+    //invalidate optmize button while ai is generating output 
+    btnOptimize.disabled = true 
+    btnOptimize.innerHTML = '<span class="spinner-border text-info spinner-border-sm"></span>'
+    divAiOutput.classList.remove('hidden')
+    divAiOutput.innerHTML = 'Optimizing...'
+
+    const strPrompt = `Imagine you're an experienced recruiter. Rewrite the following job details for a ${strRole} to sound highly professional, action-oriented, and tailored for a resume. Keept it concise: ${strDetails}`
+
+    try {
+        const response = await fetch('/api/optimize', {
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({strPrompt:strPrompt})
+        })
+        const data = await response.json() 
+
+        if(data.outcome == 'success') {
+            quillDetails.root.innerHTML = data.optimizedText
+            divAiOutput.innerHTML = 'Optimization complete!'
+            setTimeout(() => divAiOutput.classList.add('hidden'), 3000)
+        } else 
+            throw new Error(data.message)
+    } catch (objError) {
+        divAiOutput.innerHTML = `Error: ${objError.message}`
+        divAiOutput.classList.replace('alert-info', 'alert-danger')
+    } finally {
+        btnOptimize.disabled = false
+        btnOptimize.innerHTML = 'Optimize with AI'
     }
 })
