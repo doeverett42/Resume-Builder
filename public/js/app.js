@@ -1,5 +1,6 @@
 loadJobs()
 loadSkills()
+loadEducation() 
 
 /**
  *      NAVIGATION FUNCTIONALITY
@@ -268,29 +269,86 @@ async function loadSkills() {
     document.getElementById('divSkillGrid').innerHTML = htmlBuild || '<p class="text-muted small">No skills saved.</p>'
 }
 
+//function to load the education in the Records and Build page 
+async function loadEducation() {
+    const response = await fetch('/api/master/education')
+    const result = await response.json() 
+    const arrEducation = result.data
+
+    let htmlSettings = ''
+    let htmlBuild = ''
+
+    arrEducation.forEach(edu => {
+        //Build manage view
+        htmlSettings += `
+            <div class="border-bottom mb-2 pb-2">
+                <strong>${edu.Title}</strong>
+                <div class="d-flex justify-content-center flex-wrap mt-1">
+                    <button class="btn btn-outline-info btn-sm col-12 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#divEdu${edu.EducationID}" aria-expanded="false" aria-controls="#divEdu${edu.EducationID}">View Education</button>
+                    <div class="collapse col-12 mb-2" id="divEdu${edu.EducationID}">
+                        <div class="card">
+                            <div class="card-body">
+                                <p>Title: ${edu.Title}</p>
+                                <p>Start Date: ${edu.StartDate}</p>
+                                <p>End Date: ${edu.EndDate}</p>
+                                <p>Honors: ${edu.Honors}</p>
+                            </div> 
+                        </div>
+                    </div> 
+                    <button class="btn btn-sm btn-outline-danger" id="btnDeleteEdu${edu.EducationID}">Delete</button>
+                </div>
+            </div>`
+        
+        //Build checkbox view for resume builder
+        htmlBuild += `
+            <div class="col">
+                <div class="card h-100 shadow-sm p-2">
+                    <div class="form-check">
+                        <input class="form-check-input chk-job" type="checkbox" value="${edu.EducationID}" id="chkEdu${edu.EducationID}">
+                        <label class="form-check-label" for="chkEdu${edu.EducationID}">
+                            <strong>${edu.Title}</strong><br>
+                            <button class="btn btn-outline-info btn-sm col-12 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#divEdu${edu.EducationID}" aria-expanded="false" aria-controls="#divEdu${edu.EducationID}">View Education</button>
+                            <div class="collapse col-12 mb-2" id="divEdu${edu.EducationID}">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>Title: ${edu.Title}</p>
+                                        <p>Start Date: ${edu.StartDate}</p>
+                                        <p>End Date: ${edu.EndDate}</p>
+                                        <p>Honors: ${edu.Honors}</p>
+                                    </div> 
+                                </div>
+                            </div> 
+                        </label>
+                    </div>
+                </div>
+            </div>`
+    })
+
+    document.getElementById('divManageEdu').innerHTML = htmlSettings || '<p class="text-muted small">No education saved.</p>'
+    document.getElementById('divEduGrid').innerHTML = htmlBuild || '<p class="text-muted small">No education saved.</p>'
+}
+
 //Jobs Create
 document.querySelector('#btnSaveJob').addEventListener('click', async () => {
-    const company = document.getElementById('txtComp').value.trim()
-    const role = document.getElementById('txtRole').value.trim()
-    const details = quillDetails.root.innerHTML
-    const rawText = quillDetails.getText().trim()
-    const id = document.getElementById('txtJobID').value.trim()
+    const strCompany = document.getElementById('txtComp').value.trim()
+    const strRole = document.getElementById('txtRole').value.trim()
+    const strDetails = quillDetails.root.innerHTML
+    const strRawText = quillDetails.getText().trim()
 
-    if(!validateInput([{name:'Company Name',value:company},{name:'Job Title',value:role},{name:'Details',value:rawText}]))
+    if(!validateInput([{name:'Company Name',value:strCompany},{name:'Job Title',value:strRole},{name:'Details',value:strRawText}]))
         return 
 
     try {
         const response = await fetch('/api/master/jobs', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({strCompany:company, strRole:role, strDetails:details})
+            body: JSON.stringify({strCompany:strCompany, strRole:strRole, strDetails:strDetails})
         })
         const data = await response.json() 
         if(data.outcome == 'success') {
             document.getElementById('txtComp').value = ''
             document.getElementById('txtRole').value = ''
             quillDetails.setContents([])
-            document.getElementById('txtJobID').value = ''
             loadJobs() 
         }
     } catch (objError) {
@@ -300,17 +358,17 @@ document.querySelector('#btnSaveJob').addEventListener('click', async () => {
 
 //Skills Create
 document.querySelector('#btnSaveSkill').addEventListener('click', async () => {
-    const name = document.getElementById('txtSkillName').value.trim()
-    const category = document.getElementById('txtSkillCat').value.trim()
+    const strName = document.getElementById('txtSkillName').value.trim()
+    const strCategory = document.getElementById('txtSkillCat').value.trim()
 
-    if(!validateInput([{name:'Skill Name',value:name},{name:'Skill Category',value:category}]))
+    if(!validateInput([{name:'Skill Name',value:strName},{name:'Skill Category',value:strCategory}]))
         return 
 
     try {
         const response = await fetch('/api/master/skills', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({strSkillName:name, strCategory:category})
+            body: JSON.stringify({strSkillName:strName, strCategory:strCategory})
         })
         const data = await response.json() 
         if(data.outcome == 'success') {
@@ -320,6 +378,35 @@ document.querySelector('#btnSaveSkill').addEventListener('click', async () => {
         }
     } catch (objError) {
         console.error('Skills error: ', objError)
+    }
+})
+
+//Education Create
+document.querySelector('#btnSaveEdu').addEventListener('click', async () => {
+    const strTitle = document.getElementById('txtEduTitle').value.trim()
+    const strStart = document.getElementById('txtEduStart').value.trim()
+    const strEnd = document.getElementById('txtEduEnd').value.trim()
+    const strHonors = document.getElementById('txtEduHonors').value.trim()
+
+    if(!validateInput([{name:'Education Title',value:strTitle},{name:'Start Date',value:strStart},{name:'End Date',value:strEnd},{name:'Honors',value:strHonors}]))
+        return 
+
+    try {
+        const response = await fetch('/api/master/education', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({strTitle:strTitle,strStartDate:strStart,strEndDate:strEnd,strHonors:strHonors})
+        })
+        const data = await response.json() 
+        if(data.outcome == 'success') {
+            document.getElementById('txtEduTitle').value = ''
+            document.getElementById('txtEduStart').value = ''
+            document.getElementById('txtEduEnd').value = ''
+            document.getElementById('txtEduHonors').value = ''
+            loadEducation() 
+        }
+    } catch (objError) {
+        console.error('Education error: ', objError)
     }
 })
 
@@ -357,6 +444,8 @@ document.querySelector('#divMaster').addEventListener('click', async (objEvent) 
             const data = await response.json() 
             if(data.outcome == 'success') {
                 loadJobs() 
+                loadSkills()
+                loadEducation()
             }            
         }
     }
