@@ -592,3 +592,44 @@ document.querySelector('#btnJobReviewAI').addEventListener('click', async (objEv
         btnOptimize.innerHTML = 'Optimize with AI'
     }
 })
+
+//Resume Objective Optimizer
+document.querySelector('#btnObjReviewAI').addEventListener('click', async (objEvent) => {
+    const btnOptimize = objEvent.target
+    const divAiOutput = document.getElementById('divObjAiOutput')
+    const strRole = document.getElementById('txtResTitle').value.trim()
+    const strObjective = quillObjective.getText().trim()
+
+    if(!validateInput([{name:'Job Target',value:strRole},{name:'Objective',value:strObjective}]))
+        return
+
+    //invalidate optmize button while ai is generating output 
+    btnOptimize.disabled = true 
+    btnOptimize.innerHTML = '<span class="spinner-border text-info spinner-border-sm"></span>'
+    divAiOutput.classList.remove('hidden')
+    divAiOutput.innerHTML = 'Optimizing...'
+
+    const strPrompt = `You're an expert career coach. Rewrite the following resume objective for a ${strRole} candidate. Transform it into a concise, 2-3 sentence 'Professional Summary' and defined goal that leads with strongest skills and demonstrates immediate value to a potential employer. Use active verbs and remove first-person pronouns (no 'I' or 'me'). Keep it under 50 words: ${strObjective}`
+
+    try {
+        const response = await fetch('/api/optimize', {
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({strPrompt:strPrompt})
+        })
+        const data = await response.json() 
+
+        if(data.outcome == 'success') {
+            quillObjective.root.innerHTML = data.optimizedText
+            divAiOutput.innerHTML = 'Optimization complete!'
+            setTimeout(() => divAiOutput.classList.add('hidden'), 3000)
+        } else 
+            throw new Error(data.message)
+    } catch (objError) {
+        divAiOutput.innerHTML = `Error: ${objError.message}`
+        divAiOutput.classList.replace('alert-info', 'alert-danger')
+    } finally {
+        btnOptimize.disabled = false
+        btnOptimize.innerHTML = 'Optimize with AI'
+    }
+})
