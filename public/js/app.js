@@ -1,6 +1,7 @@
 loadJobs()
 loadSkills()
-loadEducation() 
+loadEducation()
+loadCertifications() 
 
 /**
  *      NAVIGATION FUNCTIONALITY
@@ -328,6 +329,65 @@ async function loadEducation() {
     document.getElementById('divEduGrid').innerHTML = htmlBuild || '<p class="text-muted small">No education saved.</p>'
 }
 
+//function to load the education in the Records and Build page 
+async function loadCertifications() {
+    const response = await fetch('/api/master/certificates')
+    const result = await response.json() 
+    const arrCerts = result.data
+
+    let htmlSettings = ''
+    let htmlBuild = ''
+
+    arrCerts.forEach(cert => {
+        //Build manage view
+        htmlSettings += `
+            <div class="border-bottom mb-2 pb-2">
+                <strong>${cert.Title}</strong>
+                <div class="d-flex justify-content-center flex-wrap mt-1">
+                    <button class="btn btn-outline-info btn-sm col-12 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#divCert${cert.CertID}" aria-expanded="false" aria-controls="#divCert${cert.CertID}">View Certificate</button>
+                    <div class="collapse col-12 mb-2" id="divCert${cert.CertID}">
+                        <div class="card">
+                            <div class="card-body">
+                                <p>Title: ${cert.Title}</p>
+                                <p>Issuer: ${cert.Issuer}</p>
+                                <p>Issue Date: ${cert.IssueDate}</p>
+                                <p>Expiration Date: ${cert.ExpirationDate}</p>
+                            </div> 
+                        </div>
+                    </div> 
+                    <button class="btn btn-sm btn-outline-danger" id="btnDeleteCert${cert.CertID}">Delete</button>
+                </div>
+            </div>`
+        
+        //Build checkbox view for resume builder
+        htmlBuild += `
+            <div class="col">
+                <div class="card h-100 shadow-sm p-2">
+                    <div class="form-check">
+                        <input class="form-check-input chk-job" type="checkbox" value="${cert.CertID}" id="chkCert${cert.CertID}">
+                        <label class="form-check-label" for="chkCert${cert.CertID}">
+                            <strong>${cert.Title}</strong><br>
+                            <button class="btn btn-outline-info btn-sm col-12 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#divCert${cert.CertID}" aria-expanded="false" aria-controls="#divCert${cert.CertID}">View Certificate</button>
+                            <div class="collapse col-12 mb-2" id="divCert${cert.CertID}">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>Title: ${cert.Title}</p>
+                                        <p>Issuer: ${cert.Issuer}</p>
+                                        <p>Issue Date: ${cert.IssueDate}</p>
+                                        <p>Expiration Date: ${cert.ExpirationDate}</p>
+                                    </div> 
+                                </div>
+                            </div> 
+                        </label>
+                    </div>
+                </div>
+            </div>`
+    })
+
+    document.getElementById('divManageCerts').innerHTML = htmlSettings || '<p class="text-muted small">No certifications saved.</p>'
+    document.getElementById('divCertGrid').innerHTML = htmlBuild || '<p class="text-muted small">No certifications saved.</p>'
+}
+
 //Jobs Create
 document.querySelector('#btnSaveJob').addEventListener('click', async () => {
     const strCompany = document.getElementById('txtComp').value.trim()
@@ -410,6 +470,36 @@ document.querySelector('#btnSaveEdu').addEventListener('click', async () => {
     }
 })
 
+//Certification Create
+document.querySelector('#btnSaveCert').addEventListener('click', async () => {
+    const strTitle = document.getElementById('txtCertTitle').value.trim()
+    const strIssuer = document.getElementById('txtCertIssuer').value.trim()
+    const strIssueDate = document.getElementById('txtCertIssueDate').value.trim()
+    const strExpDate = document.getElementById('txtCertExpDate').value.trim()
+    
+
+    if(!validateInput([{name:'Certification Title',value:strTitle},{name:'Issuer',value:strIssuer},{name:'Issue Date',value:strIssueDate},{name:'Expiration Date',value:strExpDate}]))
+        return 
+
+    try {
+        const response = await fetch('/api/master/certificates', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({strTitle:strTitle,strIssuer:strIssuer,strIssueDate:strIssueDate,strExpirationDate:strExpDate})
+        })
+        const data = await response.json() 
+        if(data.outcome == 'success') {
+            document.getElementById('txtCertTitle').value = ''
+            document.getElementById('txtCertIssuer').value = ''
+            document.getElementById('txtCertIssueDate').value = ''
+            document.getElementById('txtCertExpDate').value = ''
+            loadCertifications() 
+        }
+    } catch (objError) {
+        console.error('Education error: ', objError)
+    }
+})
+
 //Master Resume Info Deleter
 document.querySelector('#divMaster').addEventListener('click', async (objEvent) => {
     const strElementID = objEvent.target.id 
@@ -446,6 +536,7 @@ document.querySelector('#divMaster').addEventListener('click', async (objEvent) 
                 loadJobs() 
                 loadSkills()
                 loadEducation()
+                loadCertifications()
             }            
         }
     }
