@@ -1,4 +1,5 @@
 loadJobs()
+loadSkills()
 
 /**
  *      NAVIGATION FUNCTIONALITY
@@ -214,7 +215,60 @@ async function loadJobs() {
     document.getElementById('divJobGrid').innerHTML = htmlBuild || '<p class="text-muted small">No jobs saved.</p>'
 }
 
-//JOBS CRUD 
+//function to load the skills in the Records an Build page 
+async function loadSkills() {
+    const response = await fetch('/api/master/skills')
+    const result = await response.json() 
+    const arrSkills = result.data
+
+    let htmlSettings = ''
+    let htmlBuild = ''
+
+    arrSkills.forEach(skill => {
+        //Build manage view
+        htmlSettings += `
+            <div class="border-bottom mb-2 pb-2">
+                <strong>${skill.SkillName}</strong>
+                <div class="d-flex justify-content-center flex-wrap mt-1">
+                    <button class="btn btn-outline-info btn-sm col-12 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#divSkill${skill.SkillID}" aria-expanded="false" aria-controls="#divSkill${skill.SkillID}">View Skill</button>
+                    <div class="collapse col-12 mb-2" id="divSkill${skill.SkillID}">
+                        <div class="card">
+                            <div class="card-body">
+                                <p>Category: ${skill.Category}</p>
+                            </div> 
+                        </div>
+                    </div> 
+                    <button class="btn btn-sm btn-outline-danger" id="btnDeleteSkill${skill.SkillID}">Delete</button>
+                </div>
+            </div>`
+        
+        //Build checkbox view for resume builder
+        htmlBuild += `
+            <div class="col">
+                <div class="card h-100 shadow-sm p-2">
+                    <div class="form-check">
+                        <input class="form-check-input chk-job" type="checkbox" value="${skill.SkillID}" id="chkSkill${skill.SkillID}">
+                        <label class="form-check-label" for="chkSkill${skill.SkillID}">
+                            <strong>${skill.SkillName}</strong><br>
+                            <button class="btn btn-outline-info btn-sm col-12 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#divSkill${skill.SkillID}" aria-expanded="false" aria-controls="#divSkill${skill.SkillID}">View Skill</button>
+                            <div class="collapse col-12 mb-2" id="divSkill${skill.SkillID}">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>Category: ${skill.Category}</p>
+                                    </div> 
+                                </div>
+                            </div> 
+                        </label>
+                    </div>
+                </div>
+            </div>`
+    })
+
+    document.getElementById('divManageSkills').innerHTML = htmlSettings || '<p class="text-muted small">No skills saved.</p>'
+    document.getElementById('divSkillGrid').innerHTML = htmlBuild || '<p class="text-muted small">No skills saved.</p>'
+}
+
+//Jobs Create
 document.querySelector('#btnSaveJob').addEventListener('click', async () => {
     const company = document.getElementById('txtComp').value.trim()
     const role = document.getElementById('txtRole').value.trim()
@@ -241,6 +295,31 @@ document.querySelector('#btnSaveJob').addEventListener('click', async () => {
         }
     } catch (objError) {
         console.error('Jobs error: ', objError)
+    }
+})
+
+//Skills Create
+document.querySelector('#btnSaveSkill').addEventListener('click', async () => {
+    const name = document.getElementById('txtSkillName').value.trim()
+    const category = document.getElementById('txtSkillCat').value.trim()
+
+    if(!validateInput([{name:'Skill Name',value:name},{name:'Skill Category',value:category}]))
+        return 
+
+    try {
+        const response = await fetch('/api/master/skills', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({strSkillName:name, strCategory:category})
+        })
+        const data = await response.json() 
+        if(data.outcome == 'success') {
+            document.getElementById('txtSkillName').value = ''
+            document.getElementById('txtSkillCat').value = ''
+            loadSkills() 
+        }
+    } catch (objError) {
+        console.error('Skills error: ', objError)
     }
 })
 
