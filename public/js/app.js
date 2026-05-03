@@ -216,7 +216,7 @@ async function loadJobs() {
         
         //Build checkbox view for resume builder
         htmlBuild += `
-            <div class="col">
+            <div class="col" role="option">
                 <div class="card h-100 shadow-sm p-2">
                     <div class="form-check">
                         <input class="form-check-input chk-job" type="checkbox" value="${job.JobID}" id="chkJob${job.JobID}">
@@ -273,7 +273,7 @@ async function loadSkills() {
         
         //Build checkbox view for resume builder
         htmlBuild += `
-            <div class="col">
+            <div class="col" role="option">
                 <div class="card h-100 shadow-sm p-2">
                     <div class="form-check">
                         <input class="form-check-input chk-job" type="checkbox" value="${skill.SkillID}" id="chkSkill${skill.SkillID}">
@@ -329,7 +329,7 @@ async function loadEducation() {
         
         //Build checkbox view for resume builder
         htmlBuild += `
-            <div class="col">
+            <div class="col" role="option">
                 <div class="card h-100 shadow-sm p-2">
                     <div class="form-check">
                         <input class="form-check-input chk-job" type="checkbox" value="${edu.EducationID}" id="chkEdu${edu.EducationID}">
@@ -388,7 +388,7 @@ async function loadCertifications() {
         
         //Build checkbox view for resume builder
         htmlBuild += `
-            <div class="col">
+            <div class="col" role="option">
                 <div class="card h-100 shadow-sm p-2">
                     <div class="form-check">
                         <input class="form-check-input chk-job" type="checkbox" value="${cert.CertID}" id="chkCert${cert.CertID}">
