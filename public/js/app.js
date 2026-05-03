@@ -123,40 +123,55 @@ function validateInput(fields) {
     return true 
 }
 
-//settings API key configuration 
+//settings API key & Model configuration 
 document.querySelector('#btnSaveKey').addEventListener('click', async () => {
-    const apiKey = document.getElementById('txtApiKey').value 
-    if(!validateInput([{name: 'GeminiAPIKey', value: apiKey}]))
+    const strAPIKey = document.getElementById('txtApiKey').value.trim() 
+    const strAiModel = document.getElementById('txtGeminiModel').value.trim()
+
+    //ensure at least one field has a value
+    if(!strAPIKey && !strAiModel) {
+        Swal.fire({
+            title: 'Missing Information',
+            text: 'Please provide either an API Key or a Gemini Model to save.',
+            icon: 'warning'
+        })
         return 
+    }
 
-    try {
-        //check to see if a key already exists in the database and delete if so 
-        const responseCheckKey = await fetch('api/settings/GeminiAPIKey', {method: 'GET'})
-        const dataCheckKey = await responseCheckKey.json() 
+    //helper function to handle the check-delete-save database flow
+    const saveSetting = async (key, value) => {
+        const responseCheck = await fetch(`api/settings/${key}`, {method: 'GET'})
+        const dataCheck = await responseCheck.json() 
 
-        if(dataCheckKey && dataCheckKey.SettingValue) {
-            const responseDelete = await fetch('api/settings/GeminiAPIKey', {method: 'DELETE'})
+        if(dataCheck && dataCheck.SettingValue) {
+            const responseDelete = await fetch(`api/settings/${key}`, {method: 'DELETE'})
             const dataDelete = await responseDelete.json() 
-
-            if(dataDelete.outcome != 'success')
-                throw new Error('Failed to clear old API key: ', dataDelete.message) 
+            if(dataDelete.outcome != 'success') 
+                throw new Error(`Failed to clear old ${key}`) 
         }
 
-        //save new api key
         const response = await fetch('api/settings', {
             method: 'POST', 
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({strKey:'GeminiAPIKey', strValue: apiKey})
+            body: JSON.stringify({strKey:key, strValue:value})
         })
-
         const data = await response.json() 
-        
-        if(data.outcome == 'success') {
-            Swal.fire({title:'Success',text:'API Key saved. AI is ready to use!',icon:'success'})
-            document.getElementById('txtApiKey').value = ''
-        } else 
-            Swal.fire({title:'Error',text:data.message,icon:'error'})
+        if(data.outcome != 'success') 
+            throw new Error(data.message)
+    }
+
+    try {
+        //save whichever inputs the user provided
+        if(strAPIKey) 
+            await saveSetting('GeminiAPIKey', strAPIKey)
+        if(strAiModel) 
+            await saveSetting('GeminiModel', strAiModel)
+
+        Swal.fire({title:'Success',text:'Settings saved successfully!',icon:'success'})
+        document.getElementById('txtApiKey').value = ''
+        document.getElementById('txtGeminiModel').value = ''
     } catch (objError) {
+        Swal.fire({title:'Error',text:objError.message,icon:'error'})
         console.error('Settings error: ', objError)
     }
 })
@@ -417,7 +432,8 @@ document.querySelector('#btnSaveJob').addEventListener('click', async () => {
             document.getElementById('txtRole').value = ''
             quillDetails.setContents([])
             loadJobs() 
-        }
+        } else 
+            throw new Error(data.message)
     } catch (objError) {
         console.error('Jobs error: ', objError)
     }
@@ -442,7 +458,8 @@ document.querySelector('#btnSaveSkill').addEventListener('click', async () => {
             document.getElementById('txtSkillName').value = ''
             document.getElementById('txtSkillCat').value = ''
             loadSkills() 
-        }
+        } else 
+            throw new Error(data.message)
     } catch (objError) {
         console.error('Skills error: ', objError)
     }
@@ -471,7 +488,8 @@ document.querySelector('#btnSaveEdu').addEventListener('click', async () => {
             document.getElementById('txtEduEnd').value = ''
             document.getElementById('txtEduHonors').value = ''
             loadEducation() 
-        }
+        } else 
+            throw new Error(data.message)
     } catch (objError) {
         console.error('Education error: ', objError)
     }
@@ -501,7 +519,8 @@ document.querySelector('#btnSaveCert').addEventListener('click', async () => {
             document.getElementById('txtCertIssueDate').value = ''
             document.getElementById('txtCertExpDate').value = ''
             loadCertifications() 
-        }
+        } else 
+            throw new Error(data.message)
     } catch (objError) {
         console.error('Education error: ', objError)
     }
@@ -551,6 +570,7 @@ document.querySelector('#divMaster').addEventListener('click', async (objEvent) 
 
 /**
  *      AI Optimizers Functionality 
+ *      AI Use: ait was used to help generate the prompts I used for further ai prompts
  */
 //Job Details Optimizer 
 document.querySelector('#btnJobReviewAI').addEventListener('click', async (objEvent) => {

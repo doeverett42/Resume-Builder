@@ -11,8 +11,8 @@ const app = express()
 const HTTP_PORT = process.env.HTTP_PORT
 // Initialize the Google GenAI client with the API key from our .env file
 let genAI = new GoogleGenAI(process.env.GEMINI_API_KEY)
-// identify the model we want to use for story generation
-const model = "gemini-3-flash-preview"
+// identify the base model we want to use for details & objective optimization
+const model = process.env.GEMINI_MODEL
 
 app.use(express.json()) 
 app.use(express.static('public')) //directs user to public/index.html when visiting http://localhost:3000/ and this server.js is running
@@ -41,13 +41,25 @@ const initDb = async () => {
 app.post('/api/optimize', async (req,res) => {
     try {
         const strPrompt = req.body.strPrompt
-        const response = await genAI.models.generateContent({
-            model: model,
-            contents: strPrompt,
-        })
-        const text = response.text
 
-        res.status(200).json({outcome:"success", optimizedText: text})
+        //check to see if user provided their own gemini model to use
+        strQuery = "SELECT * FROM tblSettings WHERE SettingKey = ?"
+        const objRow = await dbResumes.get(strQuery,['GeminiModel']) 
+        if(objRow) {
+            const response = await genAI.models.generateContent({
+                model: objRow.SettingValue,
+                contents: strPrompt,
+            })
+            const text = response.text
+            res.status(200).json({outcome:'success', optimizedText: text})
+        } else {
+            const response = await genAI.models.generateContent({
+                model: model,
+                contents: strPrompt,
+            })
+            const text = response.text
+            res.status(200).json({outcome:"success", optimizedText: text})
+        }
     } catch (objError) {
         res.status(500).json({outcome:"error",message:objError.message})
     }
@@ -59,7 +71,7 @@ app.get('/api/settings/:key', async (req,res) => {
         const strQuery = "SELECT SettingValue FROM tblSettings WHERE SettingKey = ?"
         const objRow = await dbResumes.get(strQuery, [req.params.key])
         if(!objRow)
-            res.status(404).json({outcome:"error",message:"API key not found."})
+            res.status(404).json({outcome:"error",message:"Setting key not found."})
         else 
             res.status(200).json(objRow)
     } catch (objError) {
@@ -75,7 +87,7 @@ app.post('/api/settings', async (req,res) => {
         const objResult = await dbResumes.run(strQuery,[strKey,strValue])
         if(objResult.changes > 0) {
             if(strKey == "GeminiAPIKey")
-                genAI = new GoogleGenerativeAI(strValue)
+                genAI = new GoogleGenAI(strValue)
             res.status(201).json({outcome:"success", message:`Setting with id ${strKey} and value ${strValue} was successfully added to tblSettings`})
         }
         else 
