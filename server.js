@@ -309,7 +309,7 @@ app.post('/api/master/education', async (req, res) => {
     }
 })
 
-//PUTS for all resume information
+//PUTS for all resume information; not currently used but possible future addition 
 app.put('/api/master/jobs', async (req, res) => {
     try {
         const {strJobID, strCompany, strRole, strDetails} = req.body
