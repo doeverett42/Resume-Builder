@@ -31,7 +31,7 @@
     <main class="container py-4">
         
         <!-- Navigation top tool bar -->
-        <div class="d-flex justify-content-center gap-2 mb-4 no-print" role="toolbar" aria-label="Main Navigation">
+        <div class="d-flex justify-content-center flex-wrap gap-2 mb-4 no-print" role="toolbar" aria-label="Main Navigation">
             <button class="btn btn-secondary d-flex align-items-center gap-2" id="btnNavHome">
                 <i class="bi bi-house" aria-hidden="true"></i> Home
             </button>
@@ -100,7 +100,8 @@
                         </div>
                         <div class="mb-2">
                             <label for="txtDetails" class="form-label">Details</label>
-                            <textarea id="txtDetails" class="form-control" rows="3"></textarea>
+                            <!-- empty div space for quill editor, changed height to match later quill textbox -->
+                            <div id="txtDetails" style="height: 150px"></div>
                         </div>
                         <button class="btn btn-sm btn-outline-info mb-2 w-100" id="btnReviewAI">Optimize with AI</button>
                         <div id="divAiOutput" class="alert alert-info hidden" role="status" aria-live="polite"></div>
@@ -238,9 +239,11 @@
                     </div>
                     <div class="col-12">
                         <label for="txtResObjective" class="form-label">Objective</label>
-                        <textarea id="txtResObjective" class="form-control" rows="2"></textarea>
-                    </div>
+                        <!-- empty div space for quill editor, needs height so slection grid doesn't float up in it -->
+                        <div id="txtResObjective" style="height: 150px"></div>
+                    </div>                        
                 </div>
+
 
                 <!-- Selection Grids -->
                 <h6 class="text-muted">Select Experience:</h6>

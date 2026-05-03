@@ -69,9 +69,35 @@ document.getElementById('btnCredits').addEventListener('click', () => {
 })
 
 /**
+ *      Quill.js Initialization for Job Details and Resume Objective 
+ */
+const quillDetails = new Quill('#txtDetails', {
+    theme: 'snow',
+    placeholder: 'Describe your job responsibilities...', 
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['clean']
+        ]
+    }
+})
+
+const quillObjective = new Quill('#txtResObjective', {
+    theme: 'snow',
+    placeholder: 'Describe yourself and goal...', 
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['clean']
+        ]
+    }
+})
+
+/**
  *      INPUT FUNCTIONALITY 
  */
-
 //helper function to display popup for empty inputs & return false if fields missing and true otherwise 
 function validateInput(fields) {
     let missing = [] 
@@ -127,4 +153,10 @@ document.querySelector('#btnSaveKey').addEventListener('click', async () => {
     } catch (objError) {
         console.error('Settings error: ', objError)
     }
+})
+
+//JOBS CRUD 
+document.querySelector('#btnSaveJob').addEventListener('click', async () => {
+    const company = document.getElementById('txtComp').value.trim() 
+    const role = document.getElementById('txtRole').value.trim() 
 })
