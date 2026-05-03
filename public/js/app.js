@@ -65,6 +65,8 @@ document.getElementById('btnCredits').addEventListener('click', () => {
                 <p>This page was built with the following:</p>
                 <p style="font-size:small;">Bootstrap 5</p>
                 <p style="font-size:small;">Bootstrap Icons</p>
+                <p style="font-size:small;">Bootswatch Themes</p>
+                <p style="font-size:small;">League of Legends Images</p>
                 <p style="font-size:small;">SweetAlert2</p>
                 <p style="font-size:small;">Express.js</p>
                 <p style="font-size:small;">SQLite & SQLite3</p>
