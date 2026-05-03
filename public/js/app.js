@@ -863,27 +863,14 @@ window.renderResume = async function(intResumeID, objEvent) {
                     arrProcessedCategories.push(strCat);
                 }
             })
-
             html += `</ul>`
-}
-
+        }
         //put compiled HTML into the viewer
         document.getElementById('divResumeContent').innerHTML = html
-
-        //visual handling for active button states
-        if(objEvent) {
-            document.querySelectorAll('#divResumeList button').forEach(btn => {
-                btn.classList.remove('btn-primary', 'text-white')
-                btn.classList.add('btn-outline-primary')
-            })
-            objEvent.target.classList.remove('btn-outline-primary')
-            objEvent.target.classList.add('btn-primary', 'text-white')
-        }
-
     } catch(objError) {
         Swal.fire({title:'Error', text:'Failed to load resume details.', icon:'error'})
         console.error(objError)
-    }
+    }   
 }
 
 //print to pdf functionality 
