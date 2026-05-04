@@ -319,6 +319,7 @@ async function loadEducation() {
                         <div class="card">
                             <div class="card-body">
                                 <p>Title: ${edu.Title}</p>
+                                <p>Institute: ${edu.Institution}</p>
                                 <p>Start Date: ${edu.StartDate}</p>
                                 <p>End Date: ${edu.EndDate}</p>
                                 <p>Honors: ${edu.Honors}</p>
@@ -342,6 +343,7 @@ async function loadEducation() {
                                 <div class="card">
                                     <div class="card-body">
                                         <p>Title: ${edu.Title}</p>
+                                        <p>Institute: ${edu.Institution}</p>
                                         <p>Start Date: ${edu.StartDate}</p>
                                         <p>End Date: ${edu.EndDate}</p>
                                         <p>Honors: ${edu.Honors}</p>
@@ -479,22 +481,24 @@ document.querySelector('#btnSaveSkill').addEventListener('click', async () => {
 //Education Create
 document.querySelector('#btnSaveEdu').addEventListener('click', async () => {
     const strTitle = document.getElementById('txtEduTitle').value.trim()
+    const strInstitute = document.getElementById('txtEduInstitute').value.trim()
     const strStart = document.getElementById('txtEduStart').value.trim()
     const strEnd = document.getElementById('txtEduEnd').value.trim()
     const strHonors = document.getElementById('txtEduHonors').value.trim()
 
-    if(!validateInput([{name:'Education Title',value:strTitle},{name:'Start Date',value:strStart},{name:'End Date',value:strEnd}]))
+    if(!validateInput([{name:'Education Title',value:strTitle},{name:'Institution',value:strInstitute},{name:'Start Date',value:strStart},{name:'End Date',value:strEnd}]))
         return 
 
     try {
         const response = await fetch('/api/master/education', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({strTitle:strTitle,strStartDate:strStart,strEndDate:strEnd,strHonors:strHonors})
+            body: JSON.stringify({strTitle:strTitle,strInstitution:strInstitute,strStartDate:strStart,strEndDate:strEnd,strHonors:strHonors})
         })
         const data = await response.json() 
         if(data.outcome == 'success') {
             document.getElementById('txtEduTitle').value = ''
+            document.getElementById('txtEduInstitute').value = ''
             document.getElementById('txtEduStart').value = ''
             document.getElementById('txtEduEnd').value = ''
             document.getElementById('txtEduHonors').value = ''
@@ -824,7 +828,8 @@ window.renderResume = async function(intResumeID, objEvent) {
                         <div><strong class="fs-5">${edu.Title}</strong></div>
                         <div class="text-muted">${edu.StartDate} — ${edu.EndDate}</div>
                     </div>
-                    ${edu.Honors ? `<div class="mt-1"><em>${edu.Honors}</em></div>` : ''}
+                    <div class="mt-1"><em>${edu.Institution}</em></div>
+                    ${edu.Honors ? `<div class="mt-1"><small>Honors: ${edu.Honors}</small></div>` : ''}
                 `
             })
         }

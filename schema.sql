@@ -35,6 +35,7 @@ CREATE TABLE tblCertificates (
 CREATE TABLE tblEducation (
     EducationID INTEGER, 
     Title TEXT NOT NULL, 
+    Institution TEXT NOT NULL,
     StartDate TEXT NOT NULL, 
     EndDate TEXT NOT NULL, 
     Honors TEXT, 

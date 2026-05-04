@@ -29,7 +29,7 @@ const initDb = async () => {
         console.log("Database connected successfully.") 
 
         app.listen(HTTP_PORT, () => {
-            console.log('Listening on ', HTTP_PORT)
+            console.log('Backend server running on http://localhost:', HTTP_PORT)
         })
     } catch (objError) {    
         console.log("Error connecting to database: ", objError.message) 
@@ -314,9 +314,9 @@ app.post('/api/master/certificates', async (req, res) => {
 
 app.post('/api/master/education', async (req, res) => {
     try {
-        const {strTitle, strStartDate, strEndDate, strHonors} = req.body
-        const strQuery = "INSERT INTO tblEducation (Title, StartDate, EndDate, Honors) VALUES (?, ?, ?, ?)"
-        const objResult = await dbResumes.run(strQuery, [strTitle, strStartDate, strEndDate, strHonors])
+        const {strTitle, strInstitution, strStartDate, strEndDate, strHonors} = req.body
+        const strQuery = "INSERT INTO tblEducation (Title, Institution, StartDate, EndDate, Honors) VALUES (?, ?, ?, ?, ?)"
+        const objResult = await dbResumes.run(strQuery, [strTitle, strInstitution, strStartDate, strEndDate, strHonors])
         
         if (objResult.changes > 0)
             res.status(201).json({outcome:"success", message:`Education entry with id ${objResult.lastID} created.`, intNewID: objResult.lastID})
