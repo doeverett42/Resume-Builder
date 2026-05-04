@@ -9,13 +9,13 @@ const createWindow = () => {
     const objWindow = new BrowserWindow({
         width: width,
         height: height,
-        icon: path.join(__dirname, '/assets', 'Dr._Mundo_CorporateMundoTile.jpg'),
+        icon: path.join(__dirname, '/public/assets/', 'Dr._Mundo_CorporateMundoTile.png'),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
         }
     })
-
+    
     objWindow.loadFile('/js/index.html')
 
     objWindow.loadURL(`http://localhost:${process.env.HTTP_PORT}`)
