@@ -118,7 +118,7 @@ const quillObjective = new Quill('#txtResObjective', {
 function validateInput(fields) {
     let missing = [] 
     fields.forEach(field => {
-        if(!field.value || field.value.trim() === '') 
+        if(!field.value || field.value.trim() == '') 
             missing.push(field.name)
     })
 
@@ -744,6 +744,7 @@ document.querySelector('#btnSaveResume').addEventListener('click', async () => {
 
 /**
  *      HELPER FUNCTIONS TO CREATE MULTIPLE PAGES FOR PREVIEWING IN ELECTRON 
+ *      made mostly thruogh AI Generation
  */
 //makes an html element to show a resume page
 function createResumePage() {

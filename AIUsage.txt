@@ -1,0 +1,6 @@
+AI Usage: 
+Model: Gemini 3 Flash
+Rules file: RULES.md 
+Details: I primarily used AI to assist with the frontend as I created all server.js routes and then fed it into Gemini along with my rules to get a baseline 
+structure. I also used it heavily in working to get the print fuctionality for ElectronJS. It completely made the custom CSS style tag for resume formatting. 
+I also relied greatly on AI to help with debugging format issues and even to integrate my app over from purely a web view to ElectronJS. 

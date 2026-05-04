@@ -37,7 +37,6 @@ const initDb = async () => {
 }
 
 //Route to optimize text with Gemini AI
-//Gemini AI helped with the syntax and methods I needed to use in order for it to function
 app.post('/api/optimize', async (req,res) => {
     try {
         const strPrompt = req.body.strPrompt
