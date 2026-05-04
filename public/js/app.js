@@ -78,6 +78,7 @@ document.getElementById('btnCredits').addEventListener('click', () => {
                 <p style="font-size:small;">SQLite & SQLite3</p>
                 <p style="font-size:small;">Dotenv</p>
                 <p style="font-size:small;">Google Generative AI</p>
+                <p style="font-size:small;">ElectronJS</p>
             </div>
         `
     })
