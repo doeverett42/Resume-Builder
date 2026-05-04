@@ -18,51 +18,115 @@
         .selected-card { border-color: #0dcaf0 !important; background-color: #e0f7fa !important; }
         
         /* Resume Preview Formatting */
-        #divResumeContent { background: white; color: black; padding: 40px; }
-        .resume-header { border-bottom: 2px solid #000; margin-bottom: 20px; }
-        .resume-section { border-bottom: 1px solid #999; margin-top: 20px; font-weight: bold; text-transform: uppercase; }
+        #divResumeContent {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            background: transparent;
+            color: black;
+        }
 
-        /* --- Updated Print CSS --- */
-        
-        /*remove browser headers/footers (date, URL, page numbers) */
+        .resume-page {
+            width: min(8.5in, 100%);
+            height: 11in;
+            padding: 0.75in 1in;
+            box-sizing: border-box;
+            background: white;
+            color: #111827;
+            border: 1px solid #d7dce2;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+            font-size: 0.96rem;
+            line-height: 1.45;
+        }
+        /* Hide overflow on a single page; the JS paginator creates the next page. */
+        .resume-page-body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .resume-header {
+            border-bottom: 2px solid #1f2937;
+            padding-bottom: 0.45rem;
+            margin-bottom: 1rem;
+        }
+
+        .resume-header p {
+            margin-bottom: 0;
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
+
+        .resume-section {
+            margin-top: 1.15rem;
+            margin-bottom: 0.55rem;
+            padding-bottom: 0.2rem;
+            border-bottom: 1px solid #9ca3af;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #374151;
+        }
+
+        @media (max-width: 900px) {
+            .resume-page {
+                width: 100%;
+                height: auto;
+                min-height: 11in;
+                padding: 24px;
+            }
+        }
+
         @page {
-            margin: 0; 
+            size: Letter;
+            margin: 0;
         }
 
         @media print {
             .no-print { display: none !important; }
-            
-            body { 
-                background: white !important; 
+
+            body {
+                background: white !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
-            
-            /*override Bootstrap's .container to prevent squished look */
-            main.container { 
-                display: block !important; 
-                max-width: 100% !important; 
+
+            main.container {
+                display: block !important;
+                max-width: 100% !important;
                 width: 100% !important;
-                padding: 0 !important; 
+                padding: 0 !important;
                 margin: 0 !important;
             }
-            
-            /*apply professional margins directly to the resume content */
-            #divResumeContent { 
-                padding: 0.75in 1in !important; /* Top/Bottom: 0.75 inches, Left/Right: 1 inch */
-                border: none !important; 
-                box-shadow: none !important; /* Removes the Bootstrap shadow-sm if present */
+            /* The preview is a stack of separate paper-sized pages, not one long canvas. */
+            #divResumeContent {
+                display: block !important;
+                gap: 0 !important;
+            }
+            /* Each .resume-page visually matches one printed US Letter sheet. */
+            .resume-page {
+                width: 100% !important;
+                height: 11in !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                break-after: page;
+                page-break-after: always;
             }
 
-            /* ensure Quill lists look professional on paper */
+            .resume-page:last-child {
+                break-after: auto;
+                page-break-after: auto;
+            }
+
+            .ql-editor {
+                padding: 0 !important;
+            }
+
             .ql-editor ul, .ql-editor ol {
                 padding-left: 1.5rem !important;
                 margin-bottom: 0.5rem !important;
-            }
-
-            /*remove default ql-editor padding if it interferes with 1-inch margins */
-            .ql-editor {
-                padding: 0 !important;
             }
         }
     </style>
@@ -321,12 +385,12 @@
             <div class="card shadow-sm mb-4 no-print">
                 <div class="card-body d-flex flex-wrap gap-2 justify-content-center" id="divResumeList" role="group" aria-label="Saved Resumes"></div>
             </div>
-            <div id="divResumeContent" class="border shadow-sm mx-auto bg-white" aria-live="assertive">
-                <p class="text-center py-5 text-muted">Select a resume from the list above to preview it.</p>
+            <div id="divResumeContent" class="mx-auto" aria-live="assertive">
+                <p class="text-center py-5 text-white">Select a resume from the list above to preview it.</p>
             </div>
             <div class="text-center mt-3 no-print">
                 <button class="btn btn-outline-light text-white d-inline-flex align-items-center gap-2" id="btnPrint">
-                    <i class="bi bi-printer" aria-hidden="true"></i> Print to PDF
+                    <i class="bi bi-printer" aria-hidden="true"></i> Print / Save <aside></aside> PDF
                 </button>
             </div>
         </div>

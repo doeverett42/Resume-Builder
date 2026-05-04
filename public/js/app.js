@@ -6,6 +6,12 @@ loadCertifications()
 loadSavedResumes()
 
 /**
+ *      ELECTRON BRIGE; MADE BY AI TO FIX PRINT FROM WINDOW TO ELECTRON
+ */
+const objElectron = typeof window.require === 'function' ? window.require('electron') : null
+const ipcRenderer = objElectron?.ipcRenderer ?? null
+
+/**
  *      NAVIGATION FUNCTIONALITY
  */
 
@@ -697,10 +703,10 @@ document.querySelector('#btnSaveResume').addEventListener('click', async () => {
         return
 
     //get checked IDs from container grids
-    const arrJobIds = Array.from(document.querySelectorAll('#divJobGrid input:checked')).map(cb => cb.value)
-    const arrEduIds = Array.from(document.querySelectorAll('#divEduGrid input:checked')).map(cb => cb.value)
-    const arrCertIds = Array.from(document.querySelectorAll('#divCertGrid input:checked')).map(cb => cb.value)
-    const arrSkillIds = Array.from(document.querySelectorAll('#divSkillGrid input:checked')).map(cb => cb.value)
+    const arrJobIds = Array.from(document.querySelectorAll('#divJobGrid input:checked')).map(chkBox => chkBox.value)
+    const arrEduIds = Array.from(document.querySelectorAll('#divEduGrid input:checked')).map(chkBox => chkBox.value)
+    const arrCertIds = Array.from(document.querySelectorAll('#divCertGrid input:checked')).map(chkBox => chkBox.value)
+    const arrSkillIds = Array.from(document.querySelectorAll('#divSkillGrid input:checked')).map(chkBox => chkBox.value)
 
     //build payload matching /api/resumes/full POST route
     const payload = {
@@ -722,7 +728,7 @@ document.querySelector('#btnSaveResume').addEventListener('click', async () => {
             //clear inputs and checkboxes
             document.querySelectorAll('#divBuild input[type="text"], #divBuild input[type="email"]').forEach(input => input.value = '')
             quillObjective.setContents([])
-            document.querySelectorAll('#divBuild input[type="checkbox"]').forEach(cb => cb.checked = false)
+            document.querySelectorAll('#divBuild input[type="checkbox"]').forEach(chkBox => chkBox.checked = false)
 
             //refresh the View tab list and navigate to it
             loadSavedResumes()
@@ -734,6 +740,53 @@ document.querySelector('#btnSaveResume').addEventListener('click', async () => {
         Swal.fire({title:'Error', text:objError.message, icon:'error'})
     }
 })
+
+/**
+ *      HELPER FUNCTIONS TO CREATE MULTIPLE PAGES FOR PREVIEWING IN ELECTRON 
+ */
+//makes an html element to show a resume page
+function createResumePage() {
+    const objPage = document.createElement('div')
+    objPage.className = 'resume-page border shadow-sm'
+    objPage.innerHTML = '<div class="resume-page-body"></div>'
+    return objPage
+}
+
+//takes html and divides it into Letter-sized pages for previewing
+//split already-rendered resume into multiple preview pages
+//keeps existing HTML generation intact and only moves top-level
+//blocks onto new pages when the current page runs out of space
+function paginateResumePreview() {
+    const divResumeContent = document.getElementById('divResumeContent')
+    //if the resume was already paginated once, pull the original blocks back
+    //out of the page bodies to re-run pagination cleanly
+    const arrNodes = divResumeContent.querySelector('.resume-page') ? Array.from(divResumeContent.querySelectorAll('.resume-page-body > *')) : Array.from(divResumeContent.children)
+
+    divResumeContent.innerHTML = ''
+
+    if (arrNodes.length == 0) {
+        divResumeContent.innerHTML = '<p class="text-center py-5 text-muted">Select a resume from the list above to preview it.</p>'
+        return
+    }
+
+    let objPage = createResumePage()
+    let objPageBody = objPage.querySelector('.resume-page-body')
+    divResumeContent.appendChild(objPage)
+
+    arrNodes.forEach((objNode) => {
+        objPageBody.appendChild(objNode)
+
+        //if adding block makes the page overflow, move that block to a
+        //new page instead of letting the preview and printed output drift apart
+        if (objPageBody.scrollHeight > objPageBody.clientHeight) {
+            objPageBody.removeChild(objNode)
+            objPage = createResumePage()
+            objPageBody = objPage.querySelector('.resume-page-body')
+            divResumeContent.appendChild(objPage)
+            objPageBody.appendChild(objNode)
+        }
+    })
+}
 
 /**
  *      VIEW & PRINT FUNCTIONALITY 
@@ -830,67 +883,120 @@ window.renderResume = async function(intResumeID, objEvent) {
             html += `<div class="resume-section">Education</div>`
             data.arrEducation.forEach(edu => {
                 html += `
-                    <div class="mt-3 d-flex justify-content-between align-items-center">
-                        <div><strong class="fs-5">${edu.Title}</strong></div>
-                        <div class="text-muted">${edu.StartDate} — ${edu.EndDate}</div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div><strong class="fs-5">${edu.Title}</strong></div>
+                            <div class="text-muted">${edu.StartDate} — ${edu.EndDate}</div>
+                        </div>
+                        <div class="mt-1"><em>${edu.Institution}</em></div>
+                        ${edu.Honors ? `<div class="mt-1"><small>Honors: ${edu.Honors}</small></div>` : ''}
                     </div>
-                    <div class="mt-1"><em>${edu.Institution}</em></div>
-                    ${edu.Honors ? `<div class="mt-1"><small>Honors: ${edu.Honors}</small></div>` : ''}
                 `
             })
         }
-        //render Certificates
+        //render certificates as blocks
         if(data.arrCertificates && data.arrCertificates.length > 0) {
-            html += `<div class="resume-section">Certifications</div><ul class="mt-2">`
+            html += `<div class="resume-section">Certifications</div>`
+
+            //each certificate gets its own top-level list block so pagination can
+            //move it to the next page without dragging the whole section list with it
             data.arrCertificates.forEach(cert => {
-                html += `<li>
-                            <div class ="d-flex justify-content-between align-items-center">
+                html += `
+                    <ul class="mt-2 mb-0 ps-3">
+                        <li>
+                            <div class="d-flex justify-content-between align-items-center">
                                 <div><strong>${cert.Title}</strong> (${cert.Issuer})</div>
-                                <div class="text-muted">${cert.IssueDate} — ${cert.ExpirationDate}</div>
+                                <div class="text-muted">${cert.IssueDate} &mdash; ${cert.ExpirationDate}</div>
                             </div>
-                        </li>`
+                        </li>
+                    </ul>
+                `
             })
-            html += `</ul>`
         }
-        //render Skills grouped by category
+        //render Skills as blocks for pagination
         if(data.arrSkills && data.arrSkills.length > 0) {
-            html += `<div class="resume-section">Skills</div><ul class="mt-2">`
-            
+            html += `<div class="resume-section">Skills</div>`
+
             let arrProcessedCategories = []
 
             data.arrSkills.forEach(skill => {
                 const strCat = skill.Category
 
-                //check if category already exists
                 if (!arrProcessedCategories.includes(strCat)) {
-                    //filter all skills matching this category
-                    const arrMatchingSkills = data.arrSkills.filter(s => (s.Category) == strCat).map(s => s.SkillName)
-
-                    //add to HTML
+                    const arrMatchingSkills = data.arrSkills
+                        .filter(s => s.Category == strCat)
+                        .map(s => s.SkillName)
+                    //keep the bullet styling, but make each category its own block so it can move independently during pagination
                     html += `
-                        <li class="mb-1">
-                            <strong>${strCat}:</strong> ${arrMatchingSkills.join(', ')}
-                        </li>`
-
-                    //add unique categories we don't repeat the bullet point
-                    arrProcessedCategories.push(strCat);
+                        <ul class="mt-2 mb-0 ps-3">
+                            <li>
+                                <strong>${strCat}:</strong> ${arrMatchingSkills.join(', ')}
+                            </li>
+                        </ul>
+                    `
+                    arrProcessedCategories.push(strCat)
                 }
             })
-            html += `</ul>`
         }
+
         //put compiled HTML into the viewer
         document.getElementById('divResumeContent').innerHTML = html
+        //run pagination after the resume HTML is inserted so long resumes preview as multiple printed pages instead of one tall scrolling document
+        paginateResumePreview()
     } catch(objError) {
         Swal.fire({title:'Error', text:'Failed to load resume details.', icon:'error'})
         console.error(objError)
     }   
 }
 
-//print to pdf functionality 
-document.getElementById('btnPrint').addEventListener('click', () => {
+//print to pdf functionality
+//new print function made with the help of AI to get electron functionality  
+document.getElementById('btnPrint').addEventListener('click', async () => {
+    /*  ORIGINAL PRINT FUNCTION FOR WEB VIEW
     //only attempt print if a resume has been loaded
     if (document.querySelector('.resume-header')) 
         window.print()
     else
         Swal.fire({title:'Wait', text:'Please select a resume to preview before printing.', icon:'info'})
+    */
+
+    if(!document.querySelector('.resume-header')) {
+        Swal.fire({
+            title: 'Wait',
+            text: 'Please select a resume to preview before printing.',
+            icon: 'info'
+        })
+        return
+    }
+
+    const btnPrint = document.getElementById('btnPrint')
+    const strOriginalHtml = btnPrint.innerHTML
+
+    btnPrint.disabled = true
+    btnPrint.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Opening print dialog...'
+
+    try {
+        //Recalculate page breaks right before printing so the electron print dialog uses the same page layout the user sees in the preview
+        paginateResumePreview()
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+        if(ipcRenderer) {
+            const result = await ipcRenderer.invoke('print-active-resume')
+
+            if(result?.outcome === 'error' && result.message !== 'Print job canceled') {
+                throw new Error(result.message)
+            }
+        } else {
+            window.print()
+        }
+    } catch (objError) {
+        Swal.fire({
+            title: 'Error',
+            text: objError.message,
+            icon: 'error'
+        })
+        console.error('Error printing resume: ', objError)
+    } finally {
+        btnPrint.disabled = false
+        btnPrint.innerHTML = strOriginalHtml
+    }
 })  

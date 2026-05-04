@@ -1,4 +1,4 @@
-const {app, BrowserWindow, screen} = require('electron')
+const {app, BrowserWindow, ipcMain, screen} = require('electron')
 const dotenv = require('dotenv').config()
 const path = require('path')
 require('./server.js')
@@ -15,11 +15,42 @@ const createWindow = () => {
             contextIsolation: false
         }
     })
-    
+
     objWindow.loadFile('/js/index.html')
 
     objWindow.loadURL(`http://localhost:${process.env.HTTP_PORT}`)
 }
+
+//AI generated print handler as the original window printer did not have preview compatibility with electron
+ipcMain.handle('print-active-resume', async (event) => {
+    const objWindow = BrowserWindow.fromWebContents(event.sender)
+
+    if (!objWindow) {
+        return { outcome: 'error', message: 'Unable to find the active window.' }
+    }
+
+    return new Promise((resolve) => {
+        objWindow.webContents.print(
+            {
+                silent: false,
+                printBackground: true,
+                color: true,
+                margins: { marginType: 'none' }
+            },
+            (success, failureReason) => {
+                if (!success) {
+                    resolve({
+                        outcome: 'error',
+                        message: failureReason || 'Print failed.'
+                    })
+                    return
+                }
+
+                resolve({ outcome: 'success' })
+            }
+        )
+    })
+})
 
 app.whenReady().then(() => {
     createWindow()
