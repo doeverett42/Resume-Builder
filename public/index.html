@@ -53,6 +53,17 @@
                 border: none !important; 
                 box-shadow: none !important; /* Removes the Bootstrap shadow-sm if present */
             }
+
+            /* ensure Quill lists look professional on paper */
+            .ql-editor ul, .ql-editor ol {
+                padding-left: 1.5rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            /*remove default ql-editor padding if it interferes with 1-inch margins */
+            .ql-editor {
+                padding: 0 !important;
+            }
         }
     </style>
 </head>

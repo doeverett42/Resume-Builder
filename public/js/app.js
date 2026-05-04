@@ -802,7 +802,10 @@ window.renderResume = async function(intResumeID, objEvent) {
                 </p>
             </div>
             <div class="resume-section">Objective</div>
-            <div class="mt-2">${data.strResumeObjective}</div>
+            <!-- wrap in Quill classes to presere formatting-->
+            <div class="mt-2 ql-snow">
+                <div class="ql-editor" style="padding: 0">${data.strResumeObjective}</div>
+            </div>
         `
         //render jobs
         if(data.arrJobs && data.arrJobs.length > 0) {
@@ -814,7 +817,10 @@ window.renderResume = async function(intResumeID, objEvent) {
                             <div><strong class="fs-5">${job.Role}</strong> - <em>${job.Company}</em></div>
                             <div class="text-muted">${job.StartDate} — ${job.EndDate}</div>
                         </div>
-                        <div class="mt-1">${job.Details}</div>
+                        <!-- wrap in Quill classes to preserve formatting -->
+                        <div class="mt-1 ql-snow">
+                            <div class="ql-editor" style="padding: 0">${job.Details}</div>
+                        </div>
                     </div>
                 `
             })
